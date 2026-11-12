@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+<title id="title">NUVESSA favicon</title><desc id="desc">N icon on dark square</desc>
+<rect width="128" height="128" rx="14" fill="#211B19"/><g transform="translate(8 8) scale(0.51)">
+ <path d="M40 177 V27 H63 L148 135 V27 H171 V177 H148 L63 69 V177 Z" fill="#F2EDE5"/>
+ <path d="M70 47 L139 135" fill="none" stroke="#BEA580" stroke-width="2.0" stroke-linecap="square"/>
+ <path d="M28 27 H80 M130 177 H182" fill="none" stroke="#BEA580" stroke-width="1.5" opacity="0.85"/>
+ </g>
+</svg>

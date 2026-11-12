@@ -4,7 +4,10 @@ out/
 coverage/
 playwright-report/
 test-results/
+work/
+/outputs/
 .env*
 !.env.example
 *.log
+*.tsbuildinfo
 /NUVESSA_logo_paketi.zip
