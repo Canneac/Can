@@ -10,7 +10,7 @@ type Props = {
 
 /** Fotoğrafı olan ürünlerde görseli, olmayanlarda tonlu çizgi-ikon panelini gösterir. */
 export function ProductVisual({ product, sizes, priority }: Props) {
-  if (product.image) return <Image src={product.image} alt={product.imageAlt} fill sizes={sizes} priority={priority} />;
+  if (product.image) return <Image src={product.image} alt={product.imageAlt} fill sizes={sizes} priority={priority} quality={90} />;
   return (
     <div className={`product-visual product-visual--${product.tone}`} role="img" aria-label={product.imageAlt}>
       <ProductIcon name={product.icon} className="product-visual__icon" />

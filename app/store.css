@@ -93,9 +93,9 @@ body { color: var(--ink); font-size: 13px; letter-spacing: .01em; }
 .pcard__badge { position: absolute; left: 8px; top: 8px; z-index: 2; padding: 3px 8px; background: #fff; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
 .pcard__info { display: flex; justify-content: space-between; gap: 10px; padding-top: 8px; font-size: 12px; line-height: 1.4; }
 .pcard__name { color: var(--ink); } .pcard__price { white-space: nowrap; color: var(--ink); } .pcard__price small { color: var(--mute); }
-.product-visual { position: absolute; inset: 0; display: grid; place-items: center; padding: 0; color: #8a857c; background: var(--soft); }
-.product-visual--stone { background: #eee9e1; } .product-visual--wine { background: #eadfdc; color: #86605f; } .product-visual--shadow { background: #e6e4e1; color: #77736c; } .product-visual--sage { background: #e3e7dc; color: #6f7a60; } .product-visual--ink { background: #e1e2e6; color: #5f6270; }
-.product-visual__icon { width: 36%; max-width: 160px; height: auto; stroke-width: 1; }
+.product-visual { position: absolute; inset: 0; display: grid; place-items: center; padding: 0; color: #4f4a42; background: #d9d3c8; }
+.product-visual--stone { background: linear-gradient(160deg, #e3dccf, #cbc2b2); } .product-visual--wine { background: linear-gradient(160deg, #dcc2bb, #b98f86); color: #4a2326; } .product-visual--shadow { background: linear-gradient(160deg, #c9ccd0, #9fa5ad); color: #25282c; } .product-visual--sage { background: linear-gradient(160deg, #cdd6c0, #a3b392); color: #2f3b26; } .product-visual--ink { background: linear-gradient(160deg, #3a3e48, #1f222a); color: #e8e2d4; }
+.product-visual__icon { width: 38%; max-width: 170px; height: auto; stroke-width: 1.5; }
 .product-visual > span { position: absolute; left: 8px; bottom: 8px; right: 52px; font-size: 9px; letter-spacing: .14em; text-transform: uppercase; opacity: .7; }
 
 /* ---------- Mağaza (liste) sayfası ---------- */
@@ -189,8 +189,6 @@ body { color: var(--ink); font-size: 13px; letter-spacing: .01em; }
 .reveal-ready .zsec:not(.is-in), .reveal-ready .zf:not(.is-in) { opacity: 0; transform: translateY(22px); }
 .reveal-ready .zsec, .reveal-ready .zf { transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); }
 .zh__badge--bump { animation: z-bump .45s ease-out; } @keyframes z-bump { 0% { transform: scale(.6); } 60% { transform: scale(1.35); } 100% { transform: scale(1); } }
-.cin__toggle { position: absolute; right: var(--pad); bottom: clamp(14px, 4svh, 30px); z-index: 5; display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border: 1px solid rgba(255,255,255,.55); border-radius: 99px; background: rgba(0,0,0,.28); color: #fff; font: 600 11px var(--font-body); letter-spacing: .1em; text-transform: uppercase; cursor: pointer; backdrop-filter: blur(6px); }
-.cin__toggle:hover { background: #fff; color: var(--ink); } .cin__toggle span { font-size: 9px; }
 .pcard__media:hover .pcard__add { transform: scale(1.06); }
 a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 .cin a:focus-visible, .cin button:focus-visible { outline-color: #fff; }
@@ -209,10 +207,23 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 @keyframes env-fade { from { opacity: 0; filter: blur(10px) brightness(1.25); } to { opacity: 1; filter: none; } }
 @keyframes env-iris { from { clip-path: circle(0% at var(--fx) var(--fy)); } to { clip-path: circle(150% at var(--fx) var(--fy)); } }
 @keyframes env-wipe { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
-.env-label { position: absolute; left: var(--pad); bottom: clamp(14px, 4svh, 30px); z-index: 5; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; max-width: calc(100% - 210px); color: #fff; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; opacity: var(--title, 1); }
+.env-label { position: absolute; left: var(--pad); bottom: clamp(14px, 4svh, 30px); z-index: 5; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; max-width: calc(100% - 2 * var(--pad)); color: #fff; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; opacity: var(--title, 1); }
 .env-label__count { opacity: .75; } .env-label__name { font-weight: 600; } .env-label__link { text-decoration: underline; text-underline-offset: 4px; }
 .env-label__bar { flex-basis: 100%; height: 2px; margin-top: 8px; background: rgba(255,255,255,.28); max-width: 260px; }
 .env-label__bar i { display: block; height: 100%; background: #fff; transform-origin: left; animation: env-bar linear both; }
 @keyframes env-bar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-@media (max-width: 760px) { .env-label__link { display: none; } .cin__scroll { display: none; } .env-label { max-width: calc(100% - 150px); } }
+@media (max-width: 760px) { .env-label__link { display: none; } .cin__scroll { display: none; }  }
 @media (max-height: 520px) and (orientation: landscape) { .env-label { display: none; } }
+
+/* ---------- Canlı renk, telefonda kasmayan geçişler ---------- */
+.pcard__img img, .zcol img, .zsplit__img img, .room-scene__image, .zw__hero img, .cin__next img { filter: saturate(1.14) contrast(1.05); }
+.env img, .env video { filter: saturate(1.1) contrast(1.04); }
+@media (pointer: coarse), (max-width: 900px) {
+  /* clip-path / blur animasyonları telefonda her karede yeniden boyar; yalnızca opacity + transform kullanılır */
+  .cin__next { clip-path: none; opacity: var(--reveal); transform: scale(calc(1.06 - var(--reveal) * .06)); will-change: opacity, transform; }
+  .cin__next img { transform: none; }
+  .env--current.env--t0, .env--current.env--t1, .env--current.env--t2 { animation: env-soft 1.1s ease-out both; }
+  .env img, .env video { filter: none; }
+  .cin__stage { will-change: transform; }
+}
+@keyframes env-soft { from { opacity: 0; } to { opacity: 1; } }
