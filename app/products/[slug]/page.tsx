@@ -4,10 +4,11 @@ import Link from "next/link";
 import { ProductBuyBox } from "@/components/product-buy-box";
 import { ProductCard } from "@/components/product-card";
 import { ProductVisual } from "@/components/product-visual";
+import { SiteFooter } from "@/components/site-footer";
 import { StorefrontHeader } from "@/components/storefront-header";
 import { readSnapshot } from "@/data/catalog-db";
-import { designWorlds, getWorld } from "@/data/catalog";
-import { formatTryFromKurus } from "@/domain/money";
+import { getWorld } from "@/data/catalog";
+import { departments, inDepartment } from "@/data/departments";
 
 export const dynamic = "force-dynamic";
 
@@ -23,15 +24,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ProductPage({ params, searchParams }: Props) {
   const { slug } = await params;
   const { world } = await searchParams;
-  const { products, categories, brands } = readSnapshot();
+  const { products, brands } = readSnapshot();
   const product = products.find((entry) => entry.slug === slug);
   if (!product) notFound();
 
   const sourceWorld = world && product.worlds.includes(world) ? world : null;
-  const category = categories.find((entry) => entry.slug === product.categorySlug);
+  const department = departments.find((entry) => inDepartment(product, entry));
   const brand = brands.find((entry) => entry.slug === product.brand);
   const related = products
-    .filter((entry) => entry.slug !== product.slug && (entry.categorySlug === product.categorySlug || entry.worlds.some((w) => product.worlds.includes(w))))
+    .filter((entry) => entry.slug !== product.slug && department && inDepartment(entry, department))
     .slice(0, 4);
 
   const jsonLd = {
@@ -41,65 +42,38 @@ export default async function ProductPage({ params, searchParams }: Props) {
   };
 
   return (
-    <main className="store-page">
+    <main>
       <StorefrontHeader />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
-      <nav className="product-breadcrumb" aria-label="İçerik yolu">
-        <Link href="/">Ana sayfa</Link><span>/</span><Link href="/shop">Ürünler</Link>
-        {category && <><span>/</span><Link href={`/shop?category=${category.slug}`}>{category.name}</Link></>}
-        <span>/</span><span>{product.name}</span>
+      <nav className="zp__crumbs" aria-label="İçerik yolu">
+        <Link href="/shop">Alışveriş</Link>
+        {department && <><span>/</span><Link href={`/shop?dept=${department.slug}`}>{department.name}</Link></>}
       </nav>
-      <article className="product-detail">
-        <div className={`product-detail__image product-detail__image--${product.tone}`}>
-          <ProductVisual product={product} sizes="(max-width: 700px) 100vw, 55vw" priority />
-        </div>
-        <div className="product-detail__copy">
-          <p className="eyebrow">{brand?.name ?? "NUVESSA"} · {product.number}</p>
+      <article className="zp">
+        <div className="zp__media"><ProductVisual product={product} sizes="(max-width: 760px) 100vw, 55vw" priority /></div>
+        <div className="zp__info">
           <h1>{product.name}</h1>
-          <p className="product-detail__material">{product.material}</p>
-          <p className="product-detail__description">{product.description}</p>
+          <p className="zp__desc">{product.material}</p>
           <ProductBuyBox
             productSlug={product.slug} productName={product.name} variants={product.variants}
             sourceWorld={sourceWorld} sourceWorldName={sourceWorld ? getWorld(sourceWorld)?.name ?? null : null}
           />
-          <p className="demo-disclosure">DEMO ürün kaydı · Gerçek stok, sipariş veya ödeme yoktur. Fiyat: {formatTryFromKurus(product.priceInKurus)}’den başlar.</p>
-          <div className="product-detail__worlds">
-            <span>İlgili tasarım dünyaları</span>
-            {product.worlds.map((worldSlug) => {
-              const entry = designWorlds.find((item) => item.slug === worldSlug);
-              return entry ? <Link key={worldSlug} href={`/worlds/${worldSlug}`}>{entry.name} ↗</Link> : null;
-            })}
+          <div className="zp__more">
+            <details open><summary>Açıklama</summary><p>{product.description}</p></details>
+            <details><summary>Özellikler</summary><dl>{product.specs.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl></details>
+            <details><summary>Teslimat ve iade</summary><p>1.500 ₺ ve üzeri siparişlerde kargo ücretsiz, altında 49,90 ₺ (demo kuralı). İade ve teslimat koşulları gerçek satıştan önce netleştirilecektir.</p></details>
           </div>
+          <p className="zdemo">DEMO ürün · Gerçek stok, sipariş veya ödeme yoktur.</p>
         </div>
       </article>
 
-      <section className="product-info" aria-label="Ürün bilgileri">
-        <div>
-          <h2>Teknik özellikler</h2>
-          <dl className="spec-list">
-            {product.specs.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
-          </dl>
-        </div>
-        <div>
-          <h2>Teslimat ve iade</h2>
-          <ul className="info-list">
-            <li>Kargo: 1.500 ₺ ve üzeri siparişlerde ücretsiz, altında 49,90 ₺ (demo kuralı).</li>
-            <li>İade ve teslimat koşulları gerçek satış öncesinde hukuki metinlerle netleştirilecektir.</li>
-            <li>Bu sitede gerçek sipariş alınmaz; tüm akış tasarım demosudur.</li>
-          </ul>
-        </div>
-      </section>
-
       {related.length > 0 && (
-        <section className="catalog-section product-related" aria-labelledby="related-title">
-          <div className="catalog-heading"><div><h2 id="related-title">İlginizi çekebilir</h2></div></div>
-          <div className="catalog-grid">
-            {related.map((entry) => (
-              <ProductCard key={entry.slug} product={entry} brandName={brands.find((b) => b.slug === entry.brand)?.name} categoryName={categories.find((c) => c.slug === entry.categorySlug)?.name} />
-            ))}
-          </div>
+        <section className="zsec" aria-labelledby="related-title">
+          <div className="zsec__head"><h2 id="related-title">Birlikte iyi gider</h2></div>
+          <div className="pgrid">{related.map((entry) => <ProductCard key={entry.slug} product={entry} />)}</div>
         </section>
       )}
+      <SiteFooter />
     </main>
   );
 }

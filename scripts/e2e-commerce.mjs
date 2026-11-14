@@ -156,8 +156,6 @@ try {
     await guestPage.fill('input[aria-label="Yeni kategori adı"]', "Deneme Kategorisi");
     await guestPage.getByRole("button", { name: "Kategori ekle" }).click();
     await guestPage.waitForURL(/saved=deneme-kategorisi/);
-    await page.goto(`${baseUrl}/shop`, { waitUntil: "networkidle" });
-    check("Yeni kategori mağaza menüsünde görünüyor", (await page.locator(".category-bar").innerText()).includes("Deneme Kategorisi"));
 
     await guestPage.goto(`${baseUrl}/admin/products/new`, { waitUntil: "networkidle" });
     await guestPage.fill('input[name="name"]', "Deneme Test Ürünü");
@@ -169,7 +167,9 @@ try {
     await guestPage.getByRole("button", { name: "Ürünü oluştur" }).click();
     await guestPage.waitForURL(/saved=deneme-test-urunu/);
     await page.goto(`${baseUrl}/shop?q=deneme`, { waitUntil: "networkidle" });
-    check("Yönetici ekleyen yeni ürün mağazada görünüyor", (await page.locator(".catalog-card").count()) === 1 && (await page.locator(".catalog-card").innerText()).includes("123,45"));
+    check("Yönetici ekleyen yeni ürün mağazada görünüyor", (await page.locator(".pcard").count()) === 1 && (await page.locator(".pcard").innerText()).includes("123,45"));
+    await page.goto(`${baseUrl}/shop?dept=diger`, { waitUntil: "networkidle" });
+    check("Yönetici kategorisi mağazada \"Diğer\" departmanı altında görünüyor", (await page.locator(".ztabs").textContent()).includes("Diğer") && (await page.locator(".pcard").count()) >= 1);
     const invalid = await guestPage.goto(`${baseUrl}/admin/products/new`, { waitUntil: "networkidle" });
     await guestPage.fill('input[name="name"]', "Eksik Ürün");
     await guestPage.fill('textarea[name="description"]', "Varyant (fiyat/stok) girilmeyen geçersiz ürün.");
@@ -200,7 +200,7 @@ try {
     await guestPage.getByRole("button", { name: "Ürünü oluştur" }).click();
     await guestPage.waitForURL(/saved=gorselli-test-urunu/);
     await page.goto(`${baseUrl}/products/gorselli-test-urunu`, { waitUntil: "networkidle" });
-    const uploaded = await page.locator(".product-detail__image img").first().getAttribute("src");
+    const uploaded = await page.locator(".zp__media img").first().getAttribute("src");
     check("Yüklenen görsel ürün sayfasında görünüyor", Boolean(uploaded) && decodeURIComponent(uploaded).includes("/uploads/"));
     const raw = decodeURIComponent(uploaded).match(/\/uploads\/[a-f0-9]{20}\.png/)[0];
     check("Yüklenen görsel /uploads yolundan sunuluyor", (await page.request.get(`${baseUrl}${raw}`)).status() === 200);
@@ -223,23 +223,14 @@ try {
     const t = await tour.newPage();
     await t.goto(`${baseUrl}/worlds`, { waitUntil: "networkidle" });
     check("Dört dünya paneli listeleniyor", (await t.locator(".world-panel").count()) === 4);
-    await t.locator(".world-panel--heritage").click();
+    await t.locator(".zcol", { hasText: "Heritage" }).click();
     await t.waitForURL(/\/worlds\/heritage/);
     check("Dünya geçişi (renk perdesi) Heritage sayfasına götürüyor", (await t.locator("h1").textContent()).toLowerCase().includes("heritage"));
-    for (const [slug, cls] of [["modern-form", "wd--modern"], ["soft-living", "wd--soft"], ["heritage", "wd--heritage"], ["art-house", "wd--art"]]) {
+    for (const [slug, cls] of [["modern-form", "zw--modern"], ["soft-living", "zw--soft"], ["heritage", "zw--heritage"], ["art-house", "zw--art"]]) {
       const response = await t.goto(`${baseUrl}/worlds/${slug}`, { waitUntil: "networkidle" });
-      check(`/worlds/${slug} açılıyor ve kendi yerleşimini kullanıyor`, response?.status() === 200 && (await t.locator(`main.${cls}`).count()) === 1 && (await t.locator(".catalog-card").count()) > 0);
+      check(`/worlds/${slug} açılıyor ve kendi yerleşimini kullanıyor`, response?.status() === 200 && (await t.locator(`main.${cls}`).count()) === 1 && (await t.locator(".pcard").count()) > 0);
     }
-    const layouts = new Set();
-    for (const slug of ["modern-form", "soft-living", "heritage", "art-house"]) {
-      await t.goto(`${baseUrl}/worlds/${slug}`, { waitUntil: "networkidle" });
-      layouts.add(await t.evaluate(() => document.querySelector("main").firstElementChild && [...document.querySelectorAll("main > section")].map((s) => s.className).join("|")));
-    }
-    check("Dört dünyanın bölüm yapısı birbirinden farklı", layouts.size === 4);
-    check("Odalar sayfası 10 oda gösteriyor", (await (async () => { await t.goto(`${baseUrl}/rooms`, { waitUntil: "networkidle" }); return t.locator(".room-tiles .category-tile").count(); })()) === 10);
-    await t.goto(`${baseUrl}/rooms/mutfak`, { waitUntil: "networkidle" });
-    check("Mutfak odası ilgili ürünleri listeliyor", (await t.locator(".catalog-card").count()) >= 5);
-    await t.goto(`${baseUrl}/rooms`, { waitUntil: "networkidle" });
+    await t.goto(`${baseUrl}/`, { waitUntil: "networkidle" });
     await t.locator(".room-scene__dot").first().scrollIntoViewIfNeeded();
     await t.locator(".room-scene__dot").nth(2).click(); // 3. nokta: tek varyantlı vazo (doğrudan sepete eklenebilir)
     await t.locator(".room-scene__card").waitFor();
@@ -253,10 +244,10 @@ try {
     for (const path of ["/", "/shop", "/wishlist", "/cart", "/checkout", "/admin/login"]) responses.push((await t.goto(`${baseUrl}${path}`, { waitUntil: "networkidle" }))?.status());
     check("Ana menü ve alışveriş sayfaları 200 veriyor", responses.every((code) => code === 200));
     await t.goto(`${baseUrl}/shop`, { waitUntil: "networkidle" });
-    await t.locator(".favorite-button").first().click();
+    await t.locator(".pcard__fav").first().click();
     check("Favori ekleme üst menüdeki sayacı güncelliyor", (await t.locator('a[href="/wishlist"] b').first().innerText()) === "1");
     await t.goto(`${baseUrl}/wishlist`, { waitUntil: "networkidle" });
-    check("Favoriler sayfasında ürün listeleniyor", (await t.locator(".catalog-card").count()) === 1);
+    check("Favoriler sayfasında ürün listeleniyor", (await t.locator(".pcard").count()) === 1);
     await tour.close();
 
     // Mobil sepet

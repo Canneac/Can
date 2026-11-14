@@ -16,14 +16,6 @@ export default async function WorldPage({ params }: PageProps<"/worlds/[slug]">)
   const { slug } = await params;
   const world = getWorld(slug);
   if (!world) notFound();
-  const { products, categories, brands } = readSnapshot();
-  return (
-    <WorldPageLayout
-      slug={slug}
-      name={world.name}
-      products={products.filter((product) => product.worlds.includes(slug))}
-      brandName={(value) => brands.find((brand) => brand.slug === value)?.name}
-      categoryName={(value) => categories.find((category) => category.slug === value)?.name}
-    />
-  );
+  const { products } = readSnapshot();
+  return <WorldPageLayout slug={slug} name={world.name} products={products.filter((product) => product.worlds.includes(slug))} />;
 }

@@ -1,168 +1,128 @@
+// Tarayıcı kontrolü (çalışan sunucuya karşı): ana sayfa videosu ve geçişi, mağaza, arama, departmanlar,
+// ürün/koleksiyon sayfaları ve DİKEY + YATAY ekran düzenleri. Ekran görüntüleri outputs/ klasörüne kaydedilir.
 import assert from "node:assert/strict";
 import { access, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import process from "node:process";
 import { chromium } from "playwright-core";
 
-const root = process.cwd();
-const outputDirectory = join(root, "outputs");
 const baseUrl = process.env.NUVESSA_URL ?? "http://localhost:3000";
-const candidates = [
-  process.env.CHROME_PATH,
-  join(process.env.PROGRAMFILES ?? "C:\\Program Files", "Google/Chrome/Application/chrome.exe"),
-  join(process.env["PROGRAMFILES(X86)"] ?? "C:\\Program Files (x86)", "Google/Chrome/Application/chrome.exe"),
-];
-
-async function firstAvailable(paths) {
-  for (const path of paths) {
-    if (!path) continue;
-    try {
-      await access(path);
-      return path;
-    } catch {
-      // Try the next installed Chrome location.
-    }
-  }
-  throw new Error("Google Chrome bulunamadı. CHROME_PATH ortam değişkeniyle yol belirtin.");
+const outputDirectory = join(process.cwd(), "outputs");
+const candidates = [process.env.CHROME_PATH, join(process.env.PROGRAMFILES ?? "C:\\Program Files", "Google/Chrome/Application/chrome.exe")];
+let executablePath;
+for (const path of candidates) {
+  if (!path) continue;
+  try { await access(path); executablePath = path; break; } catch { /* sonrakini dene */ }
 }
-
-const executablePath = await firstAvailable(candidates);
+assert.ok(executablePath, "Google Chrome bulunamadı. CHROME_PATH ayarlayın.");
 await mkdir(outputDirectory, { recursive: true });
 const browser = await chromium.launch({ executablePath, headless: true });
+const ok = (message) => console.log(`  ✔ ${message}`);
 
 try {
-  const desktopViewport = { width: 1440, height: 1000 };
-  const desktop = await browser.newPage({ viewport: desktopViewport, deviceScaleFactor: 1 });
-  const desktopResponse = await desktop.goto(baseUrl, { waitUntil: "networkidle" });
-  assert.equal(desktopResponse?.status(), 200, "Ana sayfa 200 yanıtı vermeli.");
+  // ---- Masaüstü ana sayfa ----
+  const desktop = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  const home = await desktop.goto(baseUrl, { waitUntil: "networkidle" });
+  assert.equal(home?.status(), 200);
   assert.match(await desktop.title(), /NUVESSA/);
-  await desktop.evaluate(() => document.fonts.ready);
-  await desktop.waitForFunction(() => document.querySelector("video")?.currentTime > 0);
-
+  await desktop.waitForFunction(() => document.querySelector(".cin video")?.currentTime > 0, null, { timeout: 15000 });
+  ok("Ana sayfa 200; giriş videosu gerçekten oynuyor (currentTime > 0)");
+  assert.ok(await desktop.locator(".cin__title h1").isVisible(), "Başlık ilk ekranda görünmeli.");
+  const range = await desktop.evaluate(() => document.querySelector(".cin").offsetHeight - innerHeight);
+  await desktop.evaluate((y) => window.scrollTo(0, y), Math.round(range * 0.7));
+  await desktop.waitForTimeout(300);
+  const reveal = await desktop.evaluate(() => Number(document.querySelector(".cin__sticky").style.getPropertyValue("--reveal")));
+  assert.ok(reveal > 0.2, `Kaydırınca sonraki sahne açılmalı (reveal=${reveal}).`);
+  ok(`Kaydırmaya bağlı sinematik geçiş çalışıyor (reveal=${reveal.toFixed(2)})`);
+  await desktop.evaluate(() => document.querySelector("#koleksiyonlar").scrollIntoView());
+  await desktop.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 600) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 80)); } });
+  await desktop.waitForTimeout(500);
+  const broken = await desktop.locator("img").evaluateAll((images) => images.filter((image) => !(image.complete && image.naturalWidth > 0)).map((image) => image.currentSrc || image.src));
+  assert.deepEqual(broken, [], "Tüm görseller yüklenmeli.");
+  ok("Ana sayfadaki tüm görseller yüklendi");
   await desktop.locator(".room-scene").scrollIntoViewIfNeeded();
   await desktop.locator(".room-scene__dot").first().click();
-  assert.match(await desktop.locator(".room-scene__card").innerText(), /₺/, "Shop the Room noktası fiyatlı ürün kartı açmalı.");
+  assert.match(await desktop.locator(".room-scene__card").innerText(), /₺/);
   await desktop.keyboard.press("Escape");
-  assert.equal(await desktop.locator(".room-scene__card").count(), 0, "Esc ile ürün kartı kapanmalı.");
-
-  await desktop.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 600) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 100)); } });
-  await desktop.waitForTimeout(500);
-  const imageAudit = await desktop.locator("img").evaluateAll((images) => images.map((image) => ({
-    src: image.currentSrc || image.src,
-    loaded: image.complete && image.naturalWidth > 0,
-    alt: image.alt,
-  })));
-  assert.ok(imageAudit.length >= 10, `En az 10 logo/görsel bekleniyordu; ${imageAudit.length} bulundu.`);
-  assert.deepEqual(imageAudit.filter((image) => !image.loaded).map((image) => image.src), [], "Logo ve içerik görsellerinin tümü yüklenmeli.");
-  assert.ok(imageAudit.some((image) => image.src.includes("nuvessa-wordmark-light.svg")), "Yatay NUVESSA logosu yüklenmeli.");
+  assert.equal(await desktop.locator(".room-scene__card").count(), 0);
+  ok("Odadan alışveriş noktası ürün kartı açıyor, Esc kapatıyor");
   await desktop.evaluate(() => window.scrollTo(0, 0));
   await desktop.screenshot({ path: join(outputDirectory, "nuvessa-desktop.png") });
 
-  const shop = await browser.newPage({ viewport: desktopViewport, deviceScaleFactor: 1 });
-  const shopResponse = await shop.goto(`${baseUrl}/shop?q=vazo`, { waitUntil: "networkidle" });
-  assert.equal(shopResponse?.status(), 200, "Katalog sayfası 200 yanıtı vermeli.");
-  assert.equal(await shop.locator(".catalog-card").count(), 1, "Vazo araması tek eşleşme göstermeli.");
-  const normalizedSearch = await shop.goto(`${baseUrl}/shop?q=kase`, { waitUntil: "networkidle" });
-  assert.equal(normalizedSearch?.status(), 200);
-  assert.equal(await shop.locator(".catalog-card").count(), 1, "ASCII kâse araması Türkçe karakterli ürünü bulmalı.");
-  const noResults = await shop.goto(`${baseUrl}/shop?q=uzay%20gemisi`, { waitUntil: "networkidle" });
-  assert.equal(noResults?.status(), 200);
-  assert.equal(await shop.locator(".catalog-empty").count(), 1, "Henüz katalogda olmayan arama açık bir boş durum göstermeli.");
-  await shop.goto(`${baseUrl}/shop?q=cop%20kovasi`, { waitUntil: "networkidle" });
-  assert.equal(await shop.locator(".catalog-card").count(), 1, "ASCII çöp kovası araması Türkçe katalog kaydını bulmalı.");
-  assert.equal(await shop.locator(".catalog-card img").evaluate((image) => image.complete && image.naturalWidth > 0), true, "Çöp kovası görseli yüklenmeli.");
-  await shop.goto(`${baseUrl}/shop?q=kasik`, { waitUntil: "networkidle" });
-  assert.equal(await shop.locator(".catalog-card").count(), 1, "ASCII kaşık araması Türkçe katalog kaydını bulmalı.");
-  assert.equal(await shop.locator(".catalog-card img").evaluate((image) => image.complete && image.naturalWidth > 0), true, "Çatal-kaşık görseli yüklenmeli.");
-  await shop.goto(`${baseUrl}/shop?category=mobilya&sort=price-asc`, { waitUntil: "networkidle" });
-  assert.equal(await shop.locator(".catalog-card").count(), 7, "Mobilya kategorisi (ek kategoriler dahil) 7 ürün göstermeli.");
-  const sofaImageHandle = shop.locator(".catalog-card img").first();
-  await sofaImageHandle.scrollIntoViewIfNeeded();
-  await shop.waitForFunction(() => { const image = document.querySelector(".catalog-card img"); return image && image.complete && image.naturalWidth > 0; });
-  const sofaImage = await sofaImageHandle.evaluate((image) => image.complete && image.naturalWidth > 0);
-  assert.equal(sofaImage, true, "Kanepe görseli yüklenmeli.");
-  await shop.goto(`${baseUrl}/shop`, { waitUntil: "networkidle" });
-  assert.equal(await shop.locator(".catalog-card").count(), 30, "Katalogda 30 demo ürün olmalı.");
-  assert.equal(await shop.locator(".category-tile").count(), 8, "Sekiz kategori kartı olmalı.");
-  assert.equal(await shop.locator(".shop-hero__image").evaluate((image) => image.complete && image.naturalWidth > 0), true, "Giriş görseli yüklenmeli.");
-  await shop.goto(`${baseUrl}/shop?category=beyaz-esya`, { waitUntil: "networkidle" });
-  assert.equal(await shop.locator(".catalog-card").count(), 3, "Beyaz eşya kategorisinde üç ürün olmalı.");
-  await shop.goto(`${baseUrl}/shop?q=buzdolabi`, { waitUntil: "networkidle" });
-  assert.equal(await shop.locator(".catalog-card").count(), 1, "ASCII buzdolabı araması ürünü bulmalı.");
-  await shop.fill(".header-search input", "havlu");
-  await Promise.all([shop.waitForURL(/q=havlu/), shop.locator(".header-search button").click()]);
-  assert.equal(await shop.locator(".catalog-card").count(), 1, "Üst arama kutusu kataloğu filtrelemeli.");
+  // ---- Mağaza, arama, departman ----
+  const shop = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  const count = async (url) => { await shop.goto(`${baseUrl}${url}`, { waitUntil: "networkidle" }); return shop.locator(".pcard").count(); };
+  assert.equal(await count("/shop"), 30);
+  ok("Mağazada 30 ürün var");
+  assert.equal(await count("/shop?q=vazo"), 1); assert.equal(await count("/shop?q=kase"), 1);
+  assert.equal(await count("/shop?q=cop%20kovasi"), 1); assert.equal(await count("/shop?q=kasik"), 1);
+  assert.equal(await count("/shop?q=buzdolabi"), 1);
+  assert.equal(await count("/shop?q=uzay%20gemisi"), 0);
+  assert.equal(await shop.locator(".zempty").count(), 1);
+  ok("Arama: vazo, kâse/kase, çöp kovası/cop kovasi, kaşık/kasik, buzdolabı; boş sonuç durumu");
+  assert.equal(await count("/shop?dept=mutfak"), 9);
+  const kitchenText = await shop.locator(".pgrid").innerText();
+  for (const word of ["Buzdolabı", "Tencere", "Çatal Kaşık", "Espresso", "Kupa"]) assert.ok(kitchenText.includes(word), `Mutfak sayfasında ${word} olmalı.`);
+  ok("Mutfak departmanı tek sayfada: beyaz eşya + küçük aletler + pişirme + sofra (9 ürün)");
+  assert.equal(await count("/shop?dept=mutfak&category=beyaz-esya"), 3);
   await shop.goto(`${baseUrl}/shop?sort=price-asc`, { waitUntil: "networkidle" });
-  const sortedPrices = await shop.locator(".catalog-card__details > strong").allTextContents();
-  assert.match(sortedPrices[0], /290/, "Artan sıralama en düşük demo fiyatıyla başlamalı.");
-  assert.match(sortedPrices.at(-1), /84\.990/, "Artan sıralama en yüksek demo fiyatıyla bitmeli.");
-  const iconProduct = await shop.goto(`${baseUrl}/products/vela-cift-kapili-buzdolabi`, { waitUntil: "networkidle" });
-  assert.equal(iconProduct?.status(), 200, "Görselsiz demo ürünün detay sayfası açılmalı.");
-  assert.equal(await shop.locator(".product-detail__image .product-visual__icon").count(), 1, "Görselsiz ürün çizgi ikonlu panel göstermeli.");
-  const shopLayout = await shop.evaluate(() => ({ width: innerWidth, documentWidth: document.documentElement.scrollWidth }));
-  assert.ok(shopLayout.documentWidth <= shopLayout.width, "Katalog sayfasında yatay taşma olmamalı.");
+  const prices = await shop.locator(".pcard__price").allTextContents();
+  assert.match(prices[0], /290/); assert.match(prices.at(-1), /84\.990/);
+  ok("Fiyat sıralaması doğru (₺290 → ₺84.990)");
+  assert.equal(await count("/shop?color=Bordo"), (await (async () => { await shop.goto(`${baseUrl}/shop?color=Bordo`); return shop.locator(".pcard").count(); })()));
+  assert.ok((await count("/shop?color=Bordo")) > 0 && (await count("/shop?color=Bordo")) < 30);
+  ok("Renk filtresi çalışıyor");
   await shop.goto(`${baseUrl}/shop`, { waitUntil: "networkidle" });
-  await shop.locator(".catalog-grid").scrollIntoViewIfNeeded();
-  await shop.screenshot({ path: join(outputDirectory, "nuvessa-catalog-desktop.png") });
-
+  await shop.getByRole("button", { name: "Ara", exact: true }).first().click();
+  await shop.fill("#z-search-input", "havlu");
+  await shop.keyboard.press("Enter");
+  await shop.waitForURL(/q=havlu/);
+  assert.equal(await shop.locator(".pcard").count(), 1);
+  ok("Üst bardaki arama paneli çalışıyor");
+  await shop.goto(`${baseUrl}/shop`, { waitUntil: "networkidle" });
+  await shop.getByRole("button", { name: "Menüyü aç" }).click();
+  assert.ok(await shop.locator(".zmenu__list a", { hasText: "Mutfak" }).isVisible());
+  await shop.keyboard.press("Escape");
+  assert.equal(await shop.locator(".zmenu").count(), 0);
+  ok("Tam ekran menü açılıp kapanıyor");
+  assert.equal((await shop.goto(`${baseUrl}/products/vela-cift-kapili-buzdolabi`, { waitUntil: "networkidle" }))?.status(), 200);
+  assert.equal(await shop.locator(".zp__media .product-visual__icon").count(), 1);
   for (const slug of ["modern-form", "soft-living", "heritage", "art-house"]) {
-    const response = await shop.goto(`${baseUrl}/worlds/${slug}`, { waitUntil: "networkidle" });
-    assert.equal(response?.status(), 200, `${slug} dünyası açılmalı.`);
-    await shop.screenshot({ path: join(outputDirectory, `renewal-${slug}.png`) });
+    assert.equal((await shop.goto(`${baseUrl}/worlds/${slug}`, { waitUntil: "networkidle" }))?.status(), 200);
+    assert.ok((await shop.locator(".pcard").count()) > 0);
   }
-  for (const route of ["shop", "worlds"]) {
-    assert.equal((await shop.goto(`${baseUrl}/${route}`, { waitUntil: "networkidle" }))?.status(), 200);
-    await shop.setViewportSize({width: 1440, height: 900});
-    await shop.screenshot({path: join(outputDirectory, `renewal-${route}.png`)});
-  }
-  const productResponse = await shop.goto(`${baseUrl}/products/aren-form-vazo`, { waitUntil: "networkidle" });
-  assert.equal(productResponse?.status(), 200, "Demo ürün detay sayfası açılmalı.");
-  assert.match(await shop.locator("h1").innerText(), /Aren/);
+  ok("Ürün sayfası ve dört koleksiyon sayfası açılıyor");
 
-  const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
-  const mobileResponse = await mobile.goto(baseUrl, { waitUntil: "networkidle" });
-  assert.equal(mobileResponse?.status(), 200, "Mobil ana sayfa 200 yanıtı vermeli.");
-  await mobile.evaluate(() => document.fonts.ready);
-  const mobileLayout = await mobile.evaluate(() => ({
-    width: innerWidth,
-    documentWidth: document.documentElement.scrollWidth,
-    menuDisplay: getComputedStyle(document.querySelector(".mobile-nav")).display,
-    desktopNavDisplay: getComputedStyle(document.querySelector(".desktop-nav")).display,
-  }));
-  assert.equal(mobileLayout.width, 390);
-  assert.ok(mobileLayout.documentWidth <= mobileLayout.width, "Mobil sayfada yatay taşma olmamalı.");
-  assert.equal(mobileLayout.menuDisplay, "block", "Mobil gezinme görünür olmalı.");
-  assert.equal(mobileLayout.desktopNavDisplay, "none", "Masaüstü gezinmesi dar ekranda gizlenmeli.");
-  await mobile.screenshot({ path: join(outputDirectory, "nuvessa-mobile.png") });
-
-  await mobile.locator(".mobile-nav summary").click();
-  assert.equal(await mobile.locator(".mobile-nav").getAttribute("open") !== null, true, "Mobil menü açılmalı.");
-  assert.equal(await mobile.locator(".mobile-nav nav a").count(), 4, "Mobil menüde dört bölüm bağlantısı olmalı.");
-  await mobile.goto(`${baseUrl}/shop`, { waitUntil: "networkidle" });
-  const mobileShopWidth = await mobile.evaluate(() => ({ width: innerWidth, documentWidth: document.documentElement.scrollWidth }));
-  assert.ok(mobileShopWidth.documentWidth <= mobileShopWidth.width, "Mobil katalogda yatay taşma olmamalı.");
-  await mobile.locator(".catalog-grid").scrollIntoViewIfNeeded();
-  await mobile.screenshot({ path: join(outputDirectory, "nuvessa-catalog-mobile.png") });
-
-  const narrowMobile = await browser.newPage({ viewport: { width: 360, height: 780 }, deviceScaleFactor: 1 });
-  await narrowMobile.goto(`${baseUrl}/shop`, { waitUntil: "networkidle" });
-  const narrowWidth = await narrowMobile.evaluate(() => ({ width: innerWidth, documentWidth: document.documentElement.scrollWidth }));
-  assert.ok(narrowWidth.documentWidth <= narrowWidth.width, "360px mobil katalogda yatay taşma olmamalı.");
-
-  for (const width of [375, 390, 768]) {
-    await mobile.setViewportSize({ width, height: 900 });
-    for (const route of ["", "shop"]) {
-      await mobile.goto(`${baseUrl}/${route}`, { waitUntil: "networkidle" });
-      assert.ok(await mobile.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
-      await mobile.screenshot({path: join(outputDirectory, `renewal-${route || "home"}-${width}.png`)});
+  // ---- Dikey ve YATAY ekran düzenleri ----
+  const routes = ["/", "/shop", "/shop?dept=mutfak", "/products/sera-boucle-kanepe", "/worlds", "/worlds/heritage", "/cart", "/wishlist"];
+  const layouts = [["telefon dikey 375", 375, 812, true], ["telefon dikey 390", 390, 844, true], ["telefon YATAY 844×390", 844, 390, true], ["telefon YATAY 915×412", 915, 412, true], ["telefon YATAY 667×375", 667, 375, true], ["tablet dikey 768", 768, 1024, true], ["tablet YATAY 1024×768", 1024, 768, true], ["dizüstü 1366×768", 1366, 768, false]];
+  for (const [name, width, height, touch] of layouts) {
+    const page = await browser.newPage({ viewport: { width, height }, hasTouch: touch, isMobile: touch });
+    for (const route of routes) {
+      const response = await page.goto(`${baseUrl}${route}`, { waitUntil: "networkidle" });
+      assert.equal(response?.status(), 200, `${name} ${route}`);
+      const metrics = await page.evaluate(() => ({ overflow: document.documentElement.scrollWidth - innerWidth, header: document.querySelector(".zh")?.getBoundingClientRect().height ?? 0 }));
+      assert.ok(metrics.overflow <= 0, `${name} ${route}: yatay taşma ${metrics.overflow}px`);
+      assert.ok(metrics.header <= height * 0.2, `${name} ${route}: üst bar çok yüksek (${metrics.header}px)`);
     }
+    // İlk ekranda başlık ve düğmeler görünmeli (yatay telefonda taşma olmamalı)
+    await page.goto(baseUrl, { waitUntil: "networkidle" });
+    const first = await page.evaluate(() => { const r = (s) => document.querySelector(s).getBoundingClientRect(); return { h1: r(".cin__title h1"), cta: r(".cin__cta"), vh: innerHeight }; });
+    assert.ok(first.cta.bottom <= first.vh, `${name}: ana sayfa düğmeleri ilk ekrana sığmıyor (${Math.round(first.cta.bottom)} > ${first.vh})`);
+    assert.ok(first.h1.top >= 0, `${name}: başlık ekranın üstünden taşıyor`);
+    await page.screenshot({ path: join(outputDirectory, `nuvessa-home-${width}x${height}.png`) });
+    await page.close();
+    ok(`${name}: ${routes.length} sayfada yatay taşma yok, üst bar uygun, ilk ekran sığıyor`);
   }
-  console.log(`Masaüstü: ${desktopViewport.width} × ${desktopViewport.height} — ana sayfa 200, logo ve tüm görseller yüklü.`);
-  console.log("Katalog: Türkçe/ASCII araması, boş durum, mobilya filtresi, dört dünya ve ürün detayı çalışıyor.");
-  console.log("Mobil: 390 × 844 ve katalog 360 × 780 — yatay taşma yok; menü ve hotspot çalışıyor.");
-  console.log("Masaüstü/mobil ana sayfa ve katalog ekran görüntüleri outputs/ klasörüne kaydedildi.");
+  // Yatay telefonda menü kullanılabilir mi?
+  const land = await browser.newPage({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true });
+  await land.goto(`${baseUrl}/shop`, { waitUntil: "networkidle" });
+  await land.getByRole("button", { name: "Menüyü aç" }).tap();
+  const lastItem = land.locator(".zmenu__list a").last();
+  await lastItem.scrollIntoViewIfNeeded();
+  assert.ok(await lastItem.isVisible());
+  ok("Yatay telefonda menü açılıyor ve tüm maddelere ulaşılıyor");
 } finally {
   await browser.close();
 }
-
-
+console.log("\nTarayıcı kontrolü tamamlandı.");

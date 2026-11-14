@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
 import "./globals.css";
+import "./store.css";
 
 const editorial = Cormorant_Garamond({
   variable: "--font-editorial",

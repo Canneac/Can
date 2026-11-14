@@ -60,7 +60,7 @@ export function ShopTheRoom({ scene, products }: { scene: Scene; products: Recor
           <div className="room-scene__info">
             <small>{product.brandName}</small>
             <strong>{product.name}</strong>
-            <span>{product.hasVariants ? "’den " : ""}{formatTryFromKurus(product.priceInKurus)} · {product.stock > 0 ? "Stokta" : "Tükendi"}</span>
+            <span>{formatTryFromKurus(product.priceInKurus)}{product.hasVariants ? "’den" : ""} · {product.stock > 0 ? "Stokta" : "Tükendi"}</span>
             <div className="room-scene__actions">
               <Link href={`/products/${product.slug}`}>Ürüne git →</Link>
               {product.singleVariantId && product.stock > 0 ? (

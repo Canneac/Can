@@ -103,7 +103,7 @@ Güvenli ve geri alınabilir işlemler için onay beklenmez. **Önce onay alın�
 | 6 | Admin paneli | ✅ Güvenli giriş, ürün/stok/fiyat, kategori, marka, sipariş. ⏳ Tedarikçi kaydı, banner/sahne yönetimi |
 | 2 | Ana sayfa | ✅ Gerçek video, dört dünya, kategori, yeni gelenler, Shop the Room, günlük ihtiyaçlar, odalar, footer |
 | 3 | Dört dünya | ✅ Ayrı yerleşimler + renk perdesi geçişi. ⏳ Dünya başına ayrı video/fotoğraf (yalnızca 1 lisanslı video ve 7 fotoğraf var) |
-| 7 | Odaya göre, Shop the Room | ✅ `/rooms`, `/rooms/[slug]`, 2 sahne / 7 hotspot. ⏳ Sahne yönetimi admin'den |
+| 7 | Shop the Room | ✅ Ana sayfada 2 sahne / 7 hotspot kodda tanımlı (`data/scenes.ts`). `/rooms` sayfaları sadeleştirme kararıyla kaldırıldı (bkz. karar günlüğü). ⏳ Sahne yönetimi admin'den |
 | — | Hesap/üyelik, kalıcı favoriler, şifre sıfırlama | ⏳ Favoriler şimdilik cihazda (localStorage) |
 | — | `/categories/[slug]`, `/search`, sitemap, canonical | ⏳ (`/shop?category=` ve `/shop?q=` çalışıyor) |
 | 8 | Kalite: erişilebilirlik, performans, güvenlik denetimi | ⏳ Temel kontroller var; derin denetim yapılmadı |
@@ -123,8 +123,14 @@ Sonuçlar her aşama sonunda dürüstçe işaretlenir: Başarılı / Başarısı
 - 14 Kas 2026 — Dünya geçişi bir CSS renk perdesidir (video değil); `prefers-reduced-motion`'da atlanır.
 - 14 Kas 2026 — Fotoğrafı olmayan demo ürünler çizgi ikonlu panelle ve "Demo görsel" etiketiyle gösterilir.
 
+- 14 Kas 2026 — **Tasarım yönü değişti (kullanıcı kararı):** Zara Home / Bershka çizgisinde sade, beyaz, görsel ağırlıklı mağaza. Kart başına yalnızca görsel + ad + fiyat; marka/malzeme/stok satırları ürün sayfasına taşındı. "Pazar yeri" hissini azaltmak için 17 kategori **8 departmana** gruplandı (ör. Mutfak = beyaz eşya + küçük aletler + pişirme + sofra tek sayfada); departmanlar `data/departments.ts`'te, kategoriler veride durur; hiçbir departmana bağlı olmayan yönetici kategorileri otomatik "Diğer"de görünür.
+- 14 Kas 2026 — Ana sayfa girişi: tam ekran gerçek video + kaydırmaya bağlı sinematik geçiş (zoom + dairesel pencere). Kullanıcının verdiği YouTube Shorts videosunun görüntüsüne erişilemedi (yalnızca başlığı okunabildi); geçiş "kaydırmayla açılan sinematik giriş" olarak yorumlandı — referans videodan farklıysa kullanıcıdan tarifi istenmeli.
+- 14 Kas 2026 — `/rooms` sayfaları ve ayrı "odaya göre" gezinmesi kaldırıldı (sadeleştirme). Oda bilgisi ürün verisinde (`rooms`) duruyor; ihtiyaç olursa geri getirilebilir.
+- 14 Kas 2026 — Dört dünya sayfası tek sade şablona indirildi (büyük görsel + aynı ürün ızgarası); atmosfer renk ve görselle ayrışır. Dünya renkli sepet özelliği aynen korundu.
+- 14 Kas 2026 — Yatay (landscape) telefon hatası: masaüstü menüsü ve 650 px'lik hero 390 px yüksekliğe sığmıyordu; tüm düzen `svh` ve kısa ekran kurallarıyla yeniden yazıldı, testlere yatay ekran boyutları eklendi.
+
 ## Test günlüğü
 
-Son çalıştırma (14 Kas 2026): `npm test` 14/14 ✔ · `npm run lint` ✔ · `tsc` ✔ · `npm run build` ✔ · `npm run test:browser` ✔ (masaüstü + mobil, gerçek video oynatma, hotspot) · `npm run test:e2e` 48/48 ✔ (üretim derlemesi, ayrı veri klasörü).
+Son çalıştırma (14 Kas 2026): `npm test` 14/14 ✔ · `npm run lint` ✔ · `tsc` ✔ · `npm run build` ✔ · `npm run test:browser` ✔ (masaüstü + mobil, gerçek video oynatma, hotspot) · `npm run test:e2e` 50/50 ✔ (üretim derlemesi, ayrı veri klasörü).
 
 Kabul testi özeti (bölüm 39): 1–2 ✔, 3 ✔ (video currentTime>0), 4–5 ✔, 6 ✔, 7 ✔ · 8–12 ✔ · 13–16 ✔ · 17–18 ✔ · 19–26 ✔ · 27–30 ✔ · 31–35 ✔ · 36–39, 41 ✔ (390/375/768 px; sepet mobil e2e) · 40 ⚠ yalnızca "video mobilde yüklenmez" tasarımıyla (≤768px'te video kapalı; gerçek cihaz ölçümü yapılmadı) · 42–47 ⏳ yayın aşaması yapılmadı.

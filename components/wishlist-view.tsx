@@ -5,7 +5,7 @@ import { ProductCard } from "@/components/product-card";
 import type { Product } from "@/domain/catalog-types";
 import { useFavorites } from "@/lib/cart-store";
 
-export function WishlistView({ products, brandNames, categoryNames }: { products: Product[]; brandNames: Record<string, string>; categoryNames: Record<string, string> }) {
+export function WishlistView({ products }: { products: Product[] }) {
   const favorites = useFavorites();
   const selected = products.filter((product) => favorites.includes(product.slug));
   if (!selected.length) {
@@ -18,8 +18,8 @@ export function WishlistView({ products, brandNames, categoryNames }: { products
     );
   }
   return (
-    <div className="catalog-grid">
-      {selected.map((product) => <ProductCard key={product.slug} product={product} brandName={brandNames[product.brand]} categoryName={categoryNames[product.categorySlug]} />)}
+    <div className="pgrid">
+      {selected.map((product) => <ProductCard key={product.slug} product={product} />)}
     </div>
   );
 }

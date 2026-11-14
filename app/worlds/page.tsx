@@ -7,32 +7,23 @@ import { designWorlds } from "@/data/catalog";
 import { WORLD_CONTENT } from "@/data/worlds-content";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Tasarım dünyaları | NUVESSA", description: "NUVESSA'nın dört tasarım dünyasını keşfedin: Modern Form, Soft Living, Heritage, Art House." };
+export const metadata = { title: "Koleksiyonlar | NUVESSA", description: "NUVESSA'nın dört koleksiyonu: Modern Form, Soft Living, Heritage, Art House." };
 
 export default function WorldsPage() {
   const { products } = readSnapshot();
   return (
-    <main className="store-page">
+    <main>
       <StorefrontHeader />
-      <section className="worlds-intro">
-        <p className="eyebrow">TEK MARKA / DÖRT BAKIŞ</p>
-        <h1>Tarzınızı<br /><em>bulun.</em></h1>
-        <p>Dünyalar ürün kategorisi değil; aynı katalogdaki parçaları dört farklı bakışla bir araya getiren tasarım atmosferleridir. Hepsi aynı sepeti ve ödemeyi kullanır.</p>
-      </section>
-      <section className="worlds-grid" aria-label="NUVESSA tasarım dünyaları">
-        {designWorlds.map((world) => {
-          const content = WORLD_CONTENT[world.slug];
-          const count = products.filter((product) => product.worlds.includes(world.slug)).length;
-          return (
-            <WorldLink key={world.slug} world={world.slug} href={`/worlds/${world.slug}`} className={`world-panel world-panel--${world.className}`}>
-              <Image src={content.image} alt="" fill sizes="(max-width: 700px) 100vw, 50vw" />
-              <span>{content.kicker}</span>
-              <strong>{world.name}</strong>
-              <p>{world.quality} · {count} ürün</p>
-              <i aria-hidden="true">↗</i>
+      <section className="zshop">
+        <div className="zshop__title"><h1>Koleksiyonlar</h1><span>Hepsi aynı sepeti kullanır</span></div>
+        <div className="zcols" aria-label="NUVESSA koleksiyonları">
+          {designWorlds.map((world) => (
+            <WorldLink key={world.slug} world={world.slug} href={`/worlds/${world.slug}`} className="zcol world-panel">
+              <Image src={WORLD_CONTENT[world.slug].image} alt="" fill sizes="(max-width: 760px) 50vw, 25vw" />
+              <span>{world.name}<small>{world.quality} · {products.filter((product) => product.worlds.includes(world.slug)).length} ürün</small></span>
             </WorldLink>
-          );
-        })}
+          ))}
+        </div>
       </section>
       <SiteFooter />
     </main>

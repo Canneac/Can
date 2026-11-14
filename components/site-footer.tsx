@@ -1,19 +1,22 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
+import { departments } from "@/data/departments";
 
 export function SiteFooter() {
   return (
-    <footer className="site-footer site-footer--shop">
-      <div className="site-footer__top">
-        <Link href="/" className="site-footer__logo" aria-label="NUVESSA ana sayfa"><BrandLogo variant="footer" decorative className="footer-wordmark" /></Link>
-        <p>Bir evden daha fazlası.<br /><span>Evin tüm ihtiyaçları için modern bir seçki.</span></p>
-        <nav aria-label="Alışveriş"><Link href="/shop">Tüm ürünler</Link><Link href="/shop?sort=new#urunler">Yeni gelenler</Link><Link href="/rooms">Odalara göre</Link><Link href="/worlds">Tasarım dünyaları</Link></nav>
-        <nav aria-label="Hesap"><Link href="/cart">Sepetim</Link><Link href="/wishlist">Favorilerim</Link><Link href="/shop?category=temizlik">Günlük ihtiyaçlar</Link></nav>
+    <footer className="zf">
+      <div className="zf__top">
+        <div>
+          <Link href="/" className="zf__logo" aria-label="NUVESSA ana sayfa"><BrandLogo variant="header" decorative className="wordmark" /></Link>
+          <p>Bir evden daha fazlası. Evin tüm ihtiyaçları için modern bir seçki.</p>
+        </div>
+        <nav aria-label="Alışveriş"><h3>Alışveriş</h3>{departments.slice(0, 5).map((department) => <Link key={department.slug} href={`/shop?dept=${department.slug}`}>{department.name}</Link>)}</nav>
+        <nav aria-label="Keşfet"><h3>Keşfet</h3><Link href="/shop?sort=new">Yeni gelenler</Link><Link href="/worlds">Koleksiyonlar</Link><Link href="/shop">Tüm ürünler</Link></nav>
+        <nav aria-label="Hesap"><h3>Hesabım</h3><Link href="/cart">Sepetim</Link><Link href="/wishlist">Favorilerim</Link></nav>
       </div>
-      <div className="site-footer__bottom">
+      <div className="zf__bottom">
         <span>© NUVESSA</span>
-        <span>Tasarım demosu · Ürünler, fiyatlar ve stoklar örnektir. Gerçek sipariş veya ödeme alınmaz.</span>
-        <span>NUVESSA adı için marka tescili/hukuki inceleme tamamlanmamıştır.</span>
+        <span>Tasarım demosu · Ürünler, fiyatlar ve stoklar örnektir · Gerçek sipariş veya ödeme alınmaz</span>
       </div>
     </footer>
   );
