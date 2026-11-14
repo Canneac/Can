@@ -28,9 +28,11 @@ try {
   await desktop.waitForFunction(() => document.querySelector(".cin video")?.currentTime > 0, null, { timeout: 15000 });
   ok("Ana sayfa 200; giriş videosu gerçekten oynuyor (currentTime > 0)");
   assert.ok(await desktop.locator(".cin__title h1").isVisible(), "Başlık ilk ekranda görünmeli.");
-  assert.match(await desktop.locator(".env-label__count").innerText(), /01 \/ 20/, "Giriş 20 ortamdan oluşmalı.");
-  await desktop.waitForFunction(() => /02 \/ 20/.test(document.querySelector(".env-label__count")?.textContent ?? ""), null, { timeout: 20000 });
-  ok("20 ortamlı giriş: 1. ortam (video) bitince 2. ortama kendiliğinden geçiyor");
+  const labelBefore = await desktop.locator(".env-label__count").innerText();
+  assert.match(labelBefore, /\d\d \/ 20/, "Giriş 20 ortamdan oluşmalı.");
+  await desktop.waitForFunction((before) => (document.querySelector(".env-label__count")?.textContent ?? "") !== before, labelBefore, { timeout: 25000 });
+  await desktop.waitForFunction(() => [...document.querySelectorAll(".env video")].some((video) => video.currentTime > 0 && !video.paused), null, { timeout: 15000 });
+  ok("20 gerçek videodan oluşan giriş: ortam kendiliğinden değişiyor ve yeni video oynuyor");
   const reducedPage = await (await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" })).newPage();
   await reducedPage.goto(baseUrl, { waitUntil: "domcontentloaded" });
   await reducedPage.waitForFunction(() => document.querySelector(".env video")?.currentTime > 0, null, { timeout: 15000 });

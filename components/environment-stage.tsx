@@ -1,14 +1,28 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Environment } from "@/data/environments";
 
+/** Tek bir ortam videosu: "etkin" olunca oynar, değilken durur (sonraki ortam yalnızca önceden yüklenir). */
+function EnvVideo({ environment, active }: { environment: Environment; active: boolean }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const video = ref.current;
+    if (!video) return;
+    if (active) {
+      video.play().catch(() => { /* tarayıcı engellerse poster görünür */ });
+    } else {
+      video.pause();
+    }
+  }, [active]);
+  return <video ref={ref} src={environment.src} poster={environment.poster} muted loop playsInline preload="auto" aria-hidden="true" />;
+}
+
 /**
- * Sürekli dönüşen ortamlar: 1. ortam gerçek video, sonrakiler fotoğraf kadrajları.
- * Her geçiş farklı bir dönüşümdür (yumuşak çözülme / dairesel açılma / yatay silme).
- * Yalnızca şimdiki, önceki ve sonraki ortam DOM'dadır (sonraki önceden yüklenir) — hafif kalır.
+ * Sürekli dönüşen ortamlar: 20 gerçek video. Her geçiş farklı bir dönüşümdür
+ * (yumuşak çözülme / dairesel açılma / yatay silme). Yalnızca önceki, şimdiki ve sonraki
+ * ortam DOM'dadır; sonraki ortam önceden yüklenir, yalnızca şimdiki oynar — hafif kalır.
  */
 export function EnvironmentStage({ environments, playing, reduced }: { environments: Environment[]; playing: boolean; reduced: boolean }) {
   const [index, setIndex] = useState(0);
@@ -45,18 +59,11 @@ export function EnvironmentStage({ environments, playing, reduced }: { environme
           const role = position === index ? "current" : position === previous ? "prev" : "next";
           return (
             <div
-              key={environment.id + position}
+              key={environment.id}
               className={`env env--${role} env--t${transition}${reduced ? " env--calm" : ""}`}
-              style={{ "--fx": `${environment.focus[0]}%`, "--fy": `${environment.focus[1]}%`, "--z0": environment.zoom, "--z1": environment.zoom * 1.1, "--dur": `${environment.seconds + 2}s` } as React.CSSProperties}
+              style={{ "--fx": "50%", "--fy": "50%", "--z0": 1, "--z1": 1.07, "--dur": `${environment.seconds + 2}s` } as React.CSSProperties}
             >
-              {environment.kind === "video" ? (
-                <>
-                  <Image src={environment.poster ?? "/images/living-room-poster.jpg"} alt="" fill sizes="100vw" priority={position === 0} />
-                  {role !== "next" && playing && <video src={environment.src} poster={environment.poster} autoPlay muted loop playsInline preload="auto" aria-hidden="true" />}
-                </>
-              ) : (
-                <Image src={environment.src} alt="" fill sizes="100vw" priority={position === 0 || role === "current"} style={{ objectPosition: `${environment.focus[0]}% ${environment.focus[1]}%` }} />
-              )}
+              <EnvVideo environment={environment} active={playing && role !== "next"} />
             </div>
           );
         })}
@@ -65,7 +72,7 @@ export function EnvironmentStage({ environments, playing, reduced }: { environme
         <span className="env-label__count">{String(index + 1).padStart(2, "0")} / {count}</span>
         <span className="env-label__name" aria-live="off">{current.name}</span>
         <Link href={current.href} className="env-label__link">Bu ortamdaki ürünler →</Link>
-        <span className="env-label__bar" aria-hidden="true"><i key={index + String(playing)} style={{ animationDuration: `${current.seconds}s`, animationPlayState: playing ? "running" : "paused" }} /></span>
+        <span className="env-label__bar" aria-hidden="true"><i key={index} style={{ animationDuration: `${current.seconds}s`, animationPlayState: playing ? "running" : "paused" }} /></span>
       </div>
     </>
   );

@@ -1,54 +1,40 @@
 /**
- * Ana sayfa girişinin "20 ortamı". Giriş açılır açılmaz oynar ve ortamlar arasında kendiliğinden dönüşür.
- *
- * DÜRÜST NOT: Elimizde yalnızca 1 gerçek video (Pexels lisanslı) ve 7 editoryal fotoğraf var.
- * 1. ortam gerçek videodur; diğerleri aynı fotoğrafların FARKLI KADRAJLARI (yakın plan/ayrıntı) olup
- * yavaş yakınlaşma ile hareketlendirilir. Daha çok gerçek video eklendikçe `kind: "video"` ile
- * buraya eklenir; bileşende değişiklik gerekmez.
+ * Ana sayfa girişinin 20 ortamı — hepsi gerçek video (Pexels, ücretsiz lisans: ticari kullanım serbest,
+ * atıf zorunlu değil). Giriş açılır açılmaz oynar ve ortamlar arasında kendiliğinden dönüşür.
+ * Dosyalar: public/video/ortamlar/ortam-NN.mp4 (+ aynı adlı .jpg poster). Kaynaklar: docs/MEDIA.md
+ * Yeni ortam eklemek için buraya bir satır eklemek yeterlidir.
  */
 export type Environment = {
   id: string;
   name: string;
-  kind: "video" | "image";
   src: string;
-  /** Video için ilk kare görseli */
-  poster?: string;
-  /** Odak noktası (%): kadraj ve yakınlaşma buraya yapılır */
-  focus: [number, number];
-  /** 1 = tam kadraj; büyük sayı = yakın plan */
-  zoom: number;
+  /** Video yüklenene kadar görünen ilk kare */
+  poster: string;
+  /** Bu ortamın ekranda kalma süresi (saniye); video bundan kısaysa başa sarar */
   seconds: number;
   /** "Bu ortamdaki ürünler" bağlantısı */
   href: string;
 };
 
-const sofa = "/images/sofa-gallery.png";
-const salon = "/images/salon-editorial.png";
-const vase = "/images/vase-bordeaux.png";
-const bowl = "/images/sculptural-bowl.png";
-const cutlery = "/images/cutlery-gallery.png";
-const bin = "/images/waste-bin-gallery.png";
-const dusk = "/images/private-gallery-hero.png";
-
 export const environments: Environment[] = [
-  { id: "yasam-odasi", name: "Yaşam odası — gün ışığı", kind: "video", src: "/video/living-room.mp4", poster: "/images/living-room-poster.jpg", focus: [50, 55], zoom: 1, seconds: 8, href: "/shop?dept=mobilya" },
-  { id: "kanepe", name: "Salon — bouclé kanepe", kind: "image", src: sofa, focus: [50, 60], zoom: 1, seconds: 5, href: "/shop?dept=mobilya" },
-  { id: "lambader", name: "Kemerli lambader", kind: "image", src: sofa, focus: [80, 26], zoom: 1.6, seconds: 5, href: "/shop?dept=aydinlatma" },
-  { id: "duvar-sanati", name: "Duvar sanatı", kind: "image", src: sofa, focus: [60, 24], zoom: 1.55, seconds: 5, href: "/shop?dept=dekorasyon" },
-  { id: "sehpa-ustu", name: "Sehpa üstü", kind: "image", src: sofa, focus: [28, 68], zoom: 1.7, seconds: 5, href: "/shop?dept=dekorasyon" },
-  { id: "antre", name: "Antre — büyük ayna", kind: "image", src: salon, focus: [50, 50], zoom: 1, seconds: 5, href: "/shop?dept=mobilya" },
-  { id: "berjer", name: "Bordo kadife berjer", kind: "image", src: salon, focus: [82, 74], zoom: 1.7, seconds: 5, href: "/shop?dept=mobilya" },
-  { id: "konsol", name: "Konsol ve heykel", kind: "image", src: salon, focus: [56, 52], zoom: 1.7, seconds: 5, href: "/shop?dept=dekorasyon" },
-  { id: "ayna", name: "Antik ayna", kind: "image", src: salon, focus: [17, 45], zoom: 1.6, seconds: 5, href: "/shop?dept=dekorasyon" },
-  { id: "pencere", name: "Zeytin ağacı penceresi", kind: "image", src: salon, focus: [92, 36], zoom: 1.7, seconds: 5, href: "/shop?dept=mobilya" },
-  { id: "seramik-vazo", name: "Seramik vazo", kind: "image", src: vase, focus: [50, 50], zoom: 1, seconds: 5, href: "/shop?dept=dekorasyon" },
-  { id: "tas-kaide", name: "Taş kaide", kind: "image", src: vase, focus: [50, 82], zoom: 1.6, seconds: 5, href: "/shop?dept=dekorasyon" },
-  { id: "heykelsi-kase", name: "Heykelsi kâse", kind: "image", src: bowl, focus: [50, 50], zoom: 1, seconds: 5, href: "/shop?dept=dekorasyon" },
-  { id: "bronz-yuzey", name: "Bronz yüzey", kind: "image", src: bowl, focus: [52, 46], zoom: 1.7, seconds: 5, href: "/shop?dept=dekorasyon" },
-  { id: "sofra", name: "Sofra — keten örtü", kind: "image", src: cutlery, focus: [50, 55], zoom: 1, seconds: 5, href: "/shop?dept=mutfak" },
-  { id: "catal-kasik", name: "Çatal ve kaşık", kind: "image", src: cutlery, focus: [40, 58], zoom: 1.6, seconds: 5, href: "/shop?dept=mutfak" },
-  { id: "kadeh", name: "Sofrada çiçek ve kadeh", kind: "image", src: cutlery, focus: [86, 20], zoom: 1.7, seconds: 5, href: "/shop?dept=mutfak" },
-  { id: "mutfak", name: "Mutfak — günlük ihtiyaçlar", kind: "image", src: bin, focus: [50, 55], zoom: 1, seconds: 5, href: "/shop?dept=temizlik" },
-  { id: "tezgah", name: "Mutfak tezgâhı", kind: "image", src: bin, focus: [76, 24], zoom: 1.6, seconds: 5, href: "/shop?dept=mutfak" },
-  { id: "aksam-salonu", name: "Akşam salonu", kind: "image", src: dusk, focus: [60, 55], zoom: 1, seconds: 5, href: "/shop?dept=mobilya" },
+  { id: "ortam-01", name: "Yaşam odası — gün ışığı", src: "/video/ortamlar/ortam-01.mp4", poster: "/video/ortamlar/ortam-01.jpg", seconds: 8, href: "/shop?dept=mobilya" },
+  { id: "ortam-02", name: "Beyaz mutfak — ada tezgâh", src: "/video/ortamlar/ortam-02.mp4", poster: "/video/ortamlar/ortam-02.jpg", seconds: 10, href: "/shop?dept=mutfak" },
+  { id: "ortam-03", name: "Klasik mutfak — ankastre fırın", src: "/video/ortamlar/ortam-03.mp4", poster: "/video/ortamlar/ortam-03.jpg", seconds: 7, href: "/shop?dept=mutfak" },
+  { id: "ortam-04", name: "Salon — gri köşe koltuk", src: "/video/ortamlar/ortam-04.mp4", poster: "/video/ortamlar/ortam-04.jpg", seconds: 10, href: "/shop?dept=mobilya" },
+  { id: "ortam-05", name: "Cam kapılı oturma alanı", src: "/video/ortamlar/ortam-05.mp4", poster: "/video/ortamlar/ortam-05.jpg", seconds: 10, href: "/shop?dept=mobilya" },
+  { id: "ortam-06", name: "Mutfak ve yemek köşesi", src: "/video/ortamlar/ortam-06.mp4", poster: "/video/ortamlar/ortam-06.jpg", seconds: 10, href: "/shop?dept=mutfak" },
+  { id: "ortam-07", name: "Beyaz yemek alanı — ahşap masa", src: "/video/ortamlar/ortam-07.mp4", poster: "/video/ortamlar/ortam-07.jpg", seconds: 10, href: "/shop?dept=mobilya" },
+  { id: "ortam-08", name: "Loft yemek odası", src: "/video/ortamlar/ortam-08.mp4", poster: "/video/ortamlar/ortam-08.jpg", seconds: 10, href: "/shop?dept=mobilya" },
+  { id: "ortam-09", name: "Yemek odası — ahşap masa ve ayna", src: "/video/ortamlar/ortam-09.mp4", poster: "/video/ortamlar/ortam-09.jpg", seconds: 10, href: "/shop?dept=mobilya" },
+  { id: "ortam-10", name: "Geniş yemek ve oturma alanı", src: "/video/ortamlar/ortam-10.mp4", poster: "/video/ortamlar/ortam-10.jpg", seconds: 10, href: "/shop?dept=mobilya" },
+  { id: "ortam-11", name: "Sarkıt avizeli yemek alanı", src: "/video/ortamlar/ortam-11.mp4", poster: "/video/ortamlar/ortam-11.jpg", seconds: 9, href: "/shop?dept=aydinlatma" },
+  { id: "ortam-12", name: "Yatak odası", src: "/video/ortamlar/ortam-12.mp4", poster: "/video/ortamlar/ortam-12.jpg", seconds: 7, href: "/shop?dept=tekstil" },
+  { id: "ortam-13", name: "Banyo — bağımsız küvet", src: "/video/ortamlar/ortam-13.mp4", poster: "/video/ortamlar/ortam-13.jpg", seconds: 10, href: "/shop?dept=banyo" },
+  { id: "ortam-14", name: "Panoramik pencereli salon", src: "/video/ortamlar/ortam-14.mp4", poster: "/video/ortamlar/ortam-14.jpg", seconds: 10, href: "/shop?dept=mobilya" },
+  { id: "ortam-15", name: "Koridor — sıcak aydınlatma", src: "/video/ortamlar/ortam-15.mp4", poster: "/video/ortamlar/ortam-15.jpg", seconds: 7, href: "/shop?dept=aydinlatma" },
+  { id: "ortam-16", name: "Çalışma masası", src: "/video/ortamlar/ortam-16.mp4", poster: "/video/ortamlar/ortam-16.jpg", seconds: 10, href: "/shop?dept=mobilya" },
+  { id: "ortam-17", name: "Teras — dış mekân koltukları", src: "/video/ortamlar/ortam-17.mp4", poster: "/video/ortamlar/ortam-17.jpg", seconds: 10, href: "/shop?dept=balkon-bahce" },
+  { id: "ortam-18", name: "Mutfak — granit tezgâh", src: "/video/ortamlar/ortam-18.mp4", poster: "/video/ortamlar/ortam-18.jpg", seconds: 10, href: "/shop?dept=mutfak" },
+  { id: "ortam-19", name: "Salon — mavi koltuklar", src: "/video/ortamlar/ortam-19.mp4", poster: "/video/ortamlar/ortam-19.jpg", seconds: 10, href: "/shop?dept=mobilya" },
+  { id: "ortam-20", name: "Mutfak — çelik evye ve buzdolabı", src: "/video/ortamlar/ortam-20.mp4", poster: "/video/ortamlar/ortam-20.jpg", seconds: 10, href: "/shop?dept=mutfak" },
 ];
