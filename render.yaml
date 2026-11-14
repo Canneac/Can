@@ -1,0 +1,16 @@
+# Render "Blueprint": kalıcı diskli tek web servisi. Yayına almadan önce planı ve ücreti gözden geçirin.
+services:
+  - type: web
+    name: nuvessa-demo
+    runtime: docker
+    plan: starter            # Kalıcı disk için ücretli plan gerekir (aylık ücret Render'da görünür).
+    healthCheckPath: /api/health
+    disk:
+      name: nuvessa-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: ADMIN_PASSWORD
+        sync: false          # Değeri Render panelinde SİZ girersiniz (en az 12 karakter, yerel parolanızdan farklı).
+      - key: ADMIN_SESSION_SECRET
+        generateValue: true  # Render rastgele üretir.

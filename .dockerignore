@@ -1,0 +1,10 @@
+node_modules
+.next
+.next-e2e
+.git
+work
+outputs
+.env*
+!.env.example
+*.log
+NUVESSA_logo_paketi.zip

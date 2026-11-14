@@ -188,6 +188,34 @@ try {
     check("Yönetici stok değişikliği mağazaya yansıyor", (await page.locator(".buy-box__stock").innerText()).includes("Son 3"));
     const oldOrder = await (await page.request.get(`${baseUrl}/orders/${orderNumber}`)).text();
     check("Eski siparişin fiyat kaydı fiyat değişiminden etkilenmiyor", oldOrder.includes("₺1.490") || oldOrder.includes("1.490"));
+
+    // Görsel yükleme: geçerli PNG kabul edilir, sahte dosya reddedilir, yüklenen görsel sunulur
+    const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64");
+    await guestPage.goto(`${baseUrl}/admin/products/new`, { waitUntil: "networkidle" });
+    await guestPage.fill('input[name="name"]', "Görselli Test Ürünü");
+    await guestPage.fill('textarea[name="description"]', "Görsel yükleme denemesi için eklenen ürün.");
+    await guestPage.fill('input[name="variantLabel0"]', "Standart");
+    await guestPage.fill('input[name="variantPrice0"]', "10");
+    await guestPage.setInputFiles('input[name="upload"]', { name: "x.png", mimeType: "image/png", buffer: png });
+    await guestPage.getByRole("button", { name: "Ürünü oluştur" }).click();
+    await guestPage.waitForURL(/saved=gorselli-test-urunu/);
+    await page.goto(`${baseUrl}/products/gorselli-test-urunu`, { waitUntil: "networkidle" });
+    const uploaded = await page.locator(".product-detail__image img").first().getAttribute("src");
+    check("Yüklenen görsel ürün sayfasında görünüyor", Boolean(uploaded) && decodeURIComponent(uploaded).includes("/uploads/"));
+    const raw = decodeURIComponent(uploaded).match(/\/uploads\/[a-f0-9]{20}\.png/)[0];
+    check("Yüklenen görsel /uploads yolundan sunuluyor", (await page.request.get(`${baseUrl}${raw}`)).status() === 200);
+    check("Geçersiz /uploads adı reddediliyor", (await page.request.get(`${baseUrl}/uploads/..%2Fcatalog.sqlite`)).status() === 404);
+    await guestPage.goto(`${baseUrl}/admin/products/new`, { waitUntil: "networkidle" });
+    await guestPage.fill('input[name="name"]', "Sahte Dosya Ürünü");
+    await guestPage.fill('textarea[name="description"]', "Sahte görsel yükleme denemesi.");
+    await guestPage.fill('input[name="variantLabel0"]', "Standart");
+    await guestPage.fill('input[name="variantPrice0"]', "10");
+    await guestPage.setInputFiles('input[name="upload"]', { name: "x.png", mimeType: "image/png", buffer: Buffer.from("bu bir görsel değil") });
+    await guestPage.getByRole("button", { name: "Ürünü oluştur" }).click();
+    await guestPage.waitForURL(/error=/);
+    check("Görsel olmayan dosya yüklemesi reddediliyor", (await guestPage.locator(".admin-alert").innerText()).includes("PNG"));
+    const health = await (await page.request.get(`${baseUrl}/api/health`)).json();
+    check("Sağlık kontrolü (/api/health) veritabanını doğruluyor", health.ok === true && health.products >= 30);
     await guest.close();
 
     // Dünya geçişi, odalar, Shop the Room

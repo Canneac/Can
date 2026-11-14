@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { openDatabase, readProductRecords } from "@/data/catalog-db";
+import { dataDirectory, openDatabase, readProductRecords } from "@/data/catalog-db";
 import { designWorlds } from "@/data/catalog";
 import type { BrandRecord, CategoryRecord, ProductIconName, ProductRecord, Tone, Variant } from "@/domain/catalog-types";
 
@@ -210,7 +210,8 @@ export async function saveUpload(file: File): Promise<{ ok: true; path: string }
     : bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff ? "jpg"
     : bytes.subarray(0, 4).toString("latin1") === "RIFF" && bytes.subarray(8, 12).toString("latin1") === "WEBP" ? "webp" : null;
   if (!ext) return { ok: false, error: "Yalnızca PNG, JPEG veya WebP görseller yüklenebilir." };
-  const directory = join(process.cwd(), "public", "uploads");
+  // Yüklemeler veri klasöründe (kalıcı diskte) durur ve /uploads/[ad] yolundan sunulur.
+  const directory = join(dataDirectory(), "uploads");
   mkdirSync(directory, { recursive: true });
   const name = `${randomBytes(10).toString("hex")}.${ext}`;
   writeFileSync(join(directory, name), bytes);

@@ -54,8 +54,20 @@ Uygulama bir **Node sunucusu** gerektirir (Next.js sunucu sayfaları, API'ler, S
 - [ ] Hukuki: NUVESSA marka tescil incelemesi, KVKK/mesafeli satış metinleri gerçek satıştan önce (demo için gerekmez, sitede "tescilli" denmez)
 - [ ] Görsel/video lisansları: video Pexels lisanslı (`docs/MEDIA.md`); fotoğraflar yapay zekâ ile üretilmiş editoryal örneklerdir — ticari kullanım hakları doğrulanmalı
 
-## 5. Bilinen yayın sınırlamaları
+## 5. Seçenek A — hazırlanan dosyalar ve adımlar (yayın yapılmadı)
 
-- Yönetici panelinden **görsel yükleme** yerel diskte `public/uploads` içine yazar; üretimde yeni eklenen dosyalar güvenilir şekilde sunulmayabilir (seçenek A'da kalıcı disk + küçük ayar gerekir; B'de bulut depolama).
+Hazır olanlar: `Dockerfile`, `.dockerignore`, `render.yaml` (Render için), `/api/health` (sağlık kontrolü), kalıcı görsel yükleme (`/uploads/…`, veri diskinde).
+
+> Not: Bu bilgisayarda Docker kurulu olmadığı için imaj yerelde denenmedi. Aynı komutlar (`npm ci`, `npm run build`, `next start`, `NUVESSA_DATA_DIR`) üretim kipinde test edildi (`npm run test:e2e`, 53 kontrol). İlk yayında Render'ın derleme günlüğü ilk gerçek Docker denemesi olacaktır.
+
+Sizin yapacaklarınız (hesap, ücret ve kimlik bilgisi gerektirdiği için):
+1. **GitHub:** boş, özel bir depo oluşturup adresini bana verin; ben gönderimi yaparım.
+2. **Render hesabı:** render.com'a GitHub ile giriş yapın. Yeni → *Blueprint* → NUVESSA deposunu seçin. `render.yaml` servisi ve 1 GB kalıcı diski kurar. Ücreti (starter plan) ekranda görüp **siz onaylarsınız**.
+3. **Yönetici parolası:** Render ekranı `ADMIN_PASSWORD` değerini sorar; yerel parolanızdan **farklı**, en az 12 karakterlik yeni bir parola girin (parolayı bana yazmayın).
+4. Yayın bitince adresi bana verin; telefon, HTTPS, sepet → sipariş → admin akışını canlı adreste test edip raporlarım.
+
+## 6. Bilinen yayın sınırlamaları
+
 - Hız sınırlama ve oturum bellek içidir; sunucu yeniden başlayınca sıfırlanır (tek sunuculu demo için yeterli).
 - Tek yönetici parolası vardır; çok kullanıcılı yönetim yok.
+- Veritabanı tek diskte durur; disk yedeği sağlayıcının anlık görüntü özelliğine bağlıdır (yerelde `work/backups` kullanılır).
