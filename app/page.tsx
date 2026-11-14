@@ -4,7 +4,6 @@ import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
 import { StorefrontHeader } from "@/components/storefront-header";
 import { brand } from "@/config/brand";
-import { catalogProducts } from "@/data/catalog";
 import { featuredObjects, homeCollections } from "@/data/homepage";
 import { formatTryFromKurus } from "@/domain/money";
 
@@ -103,7 +102,7 @@ export default function HomePage() {
                 <span className="object-card__art-label">NUVESSA<br />OBJECT STUDY</span>
               </div>
               <div className="object-card__details">
-                <div><h3><Link href={`/products/${catalogProducts[index].slug}`}>{item.name}</Link></h3><p>{item.material}</p></div>
+                <div><h3><Link href={`/products/${["aren-form-vazo", "neroli-dekor-kasesi", "esik-salon-kompozisyonu"][index]}`}>{item.name}</Link></h3><p>{item.material}</p></div>
                 <Price amountInKurus={item.priceInKurus} />
               </div>
             </article>

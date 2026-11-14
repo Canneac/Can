@@ -1,9 +1,17 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
-import { catalogCategories } from "@/data/catalog";
+import { HeaderActions } from "@/components/header-actions";
+import { readSnapshot } from "@/data/catalog-db";
+
+const navLinks = [
+  { href: "/shop", label: "Ürünler" },
+  { href: "/worlds", label: "Tasarım dünyaları" },
+  { href: "/rooms", label: "Odalara göre" },
+  { href: "/shop?sort=new#urunler", label: "Yeni gelenler" },
+];
 
 export function StorefrontHeader() {
-  const categories = catalogCategories.filter((category) => category.status === "active");
+  const { categories } = readSnapshot();
   return (
     <>
       <div className="announcement" aria-label="Site bilgisi">
@@ -16,22 +24,21 @@ export function StorefrontHeader() {
         </Link>
         <form className="header-search" action="/shop" role="search">
           <label className="visually-hidden" htmlFor="header-search-input">Katalogda ara</label>
-          <input id="header-search-input" name="q" type="search" placeholder="Kanepe, buzdolabı, havlu, vazo ara…" autoComplete="off" />
+          <input id="header-search-input" name="q" type="search" placeholder="Kanepe, buzdolabı, çöp kovası ara…" autoComplete="off" />
           <button type="submit" aria-label="Ara"><span aria-hidden="true">⌕</span></button>
         </form>
-        <nav className="desktop-nav" aria-label="Ana gezinme">
-          <Link href="/worlds">Tasarım dünyaları</Link>
-          <Link href="/shop">Ürünleri keşfet</Link>
-          <Link href="/rooms">Odaya göre</Link>
-        </nav>
-        <details className="mobile-nav">
-          <summary aria-label="Gezinme menüsünü aç veya kapat"><span /><span /></summary>
-          <nav aria-label="Mobil gezinme">
-            <Link href="/worlds">Tasarım dünyaları</Link>
-            <Link href="/shop">Ürünleri keşfet</Link>
-            <Link href="/rooms">Odaya göre</Link>
+        <div className="header-right">
+          <nav className="desktop-nav" aria-label="Ana gezinme">
+            {navLinks.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}
           </nav>
-        </details>
+          <HeaderActions />
+          <details className="mobile-nav">
+            <summary aria-label="Gezinme menüsünü aç veya kapat"><span /><span /></summary>
+            <nav aria-label="Mobil gezinme">
+              {navLinks.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}
+            </nav>
+          </details>
+        </div>
       </header>
       <nav className="category-bar" aria-label="Ürün kategorileri">
         <Link href="/shop#urunler" className="category-bar__all">Tüm ürünler</Link>

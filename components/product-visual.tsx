@@ -1,9 +1,9 @@
 import Image from "next/image";
 import { ProductIcon } from "@/components/product-icon";
-import type { CatalogProduct } from "@/data/catalog";
+import type { Product } from "@/domain/catalog-types";
 
 type Props = {
-  product: Pick<CatalogProduct, "image" | "imageAlt" | "icon" | "tone" | "number">;
+  product: Pick<Product, "image" | "imageAlt" | "icon" | "tone" | "number">;
   sizes: string;
   priority?: boolean;
 };

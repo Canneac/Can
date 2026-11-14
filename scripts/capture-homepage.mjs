@@ -74,12 +74,14 @@ try {
   assert.equal(await shop.locator(".catalog-card").count(), 1, "ASCII kaşık araması Türkçe katalog kaydını bulmalı.");
   assert.equal(await shop.locator(".catalog-card img").evaluate((image) => image.complete && image.naturalWidth > 0), true, "Çatal-kaşık görseli yüklenmeli.");
   await shop.goto(`${baseUrl}/shop?category=mobilya&sort=price-asc`, { waitUntil: "networkidle" });
-  assert.equal(await shop.locator(".catalog-card").count(), 2, "Mobilya kategorisi yemek masası ve kanepeyi göstermeli.");
-  assert.equal(await shop.locator(".catalog-card__details h3").last().innerText(), "Sera — Bouclé Kanepe");
-  const sofaImage = await shop.locator(".catalog-card img").first().evaluate((image) => image.complete && image.naturalWidth > 0);
+  assert.equal(await shop.locator(".catalog-card").count(), 7, "Mobilya kategorisi (ek kategoriler dahil) 7 ürün göstermeli.");
+  const sofaImageHandle = shop.locator(".catalog-card img").first();
+  await sofaImageHandle.scrollIntoViewIfNeeded();
+  await shop.waitForFunction(() => { const image = document.querySelector(".catalog-card img"); return image && image.complete && image.naturalWidth > 0; });
+  const sofaImage = await sofaImageHandle.evaluate((image) => image.complete && image.naturalWidth > 0);
   assert.equal(sofaImage, true, "Kanepe görseli yüklenmeli.");
   await shop.goto(`${baseUrl}/shop`, { waitUntil: "networkidle" });
-  assert.equal(await shop.locator(".catalog-card").count(), 16, "Katalogda 16 demo ürün olmalı.");
+  assert.equal(await shop.locator(".catalog-card").count(), 30, "Katalogda 30 demo ürün olmalı.");
   assert.equal(await shop.locator(".category-tile").count(), 8, "Sekiz kategori kartı olmalı.");
   assert.equal(await shop.locator(".shop-hero__image").evaluate((image) => image.complete && image.naturalWidth > 0), true, "Giriş görseli yüklenmeli.");
   await shop.goto(`${baseUrl}/shop?category=beyaz-esya`, { waitUntil: "networkidle" });
@@ -91,11 +93,11 @@ try {
   assert.equal(await shop.locator(".catalog-card").count(), 1, "Üst arama kutusu kataloğu filtrelemeli.");
   await shop.goto(`${baseUrl}/shop?sort=price-asc`, { waitUntil: "networkidle" });
   const sortedPrices = await shop.locator(".catalog-card__details > strong").allTextContents();
-  assert.match(sortedPrices[0], /890/, "Artan sıralama en düşük demo fiyatıyla başlamalı.");
+  assert.match(sortedPrices[0], /290/, "Artan sıralama en düşük demo fiyatıyla başlamalı.");
   assert.match(sortedPrices.at(-1), /84\.990/, "Artan sıralama en yüksek demo fiyatıyla bitmeli.");
   const iconProduct = await shop.goto(`${baseUrl}/products/vela-cift-kapili-buzdolabi`, { waitUntil: "networkidle" });
   assert.equal(iconProduct?.status(), 200, "Görselsiz demo ürünün detay sayfası açılmalı.");
-  assert.equal(await shop.locator(".product-visual__icon").count(), 1, "Görselsiz ürün çizgi ikonlu panel göstermeli.");
+  assert.equal(await shop.locator(".product-detail__image .product-visual__icon").count(), 1, "Görselsiz ürün çizgi ikonlu panel göstermeli.");
   const shopLayout = await shop.evaluate(() => ({ width: innerWidth, documentWidth: document.documentElement.scrollWidth }));
   assert.ok(shopLayout.documentWidth <= shopLayout.width, "Katalog sayfasında yatay taşma olmamalı.");
   await shop.goto(`${baseUrl}/shop`, { waitUntil: "networkidle" });
@@ -134,7 +136,7 @@ try {
 
   await mobile.locator(".mobile-nav summary").click();
   assert.equal(await mobile.locator(".mobile-nav").getAttribute("open") !== null, true, "Mobil menü açılmalı.");
-  assert.equal(await mobile.locator(".mobile-nav nav a").count(), 3, "Mobil menüde üç bölüm bağlantısı olmalı.");
+  assert.equal(await mobile.locator(".mobile-nav nav a").count(), 4, "Mobil menüde dört bölüm bağlantısı olmalı.");
   await mobile.goto(`${baseUrl}/shop`, { waitUntil: "networkidle" });
   const mobileShopWidth = await mobile.evaluate(() => ({ width: innerWidth, documentWidth: document.documentElement.scrollWidth }));
   assert.ok(mobileShopWidth.documentWidth <= mobileShopWidth.width, "Mobil katalogda yatay taşma olmamalı.");

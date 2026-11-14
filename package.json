@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "node --test tests/*.test.mjs",
-    "test:browser": "node scripts/capture-homepage.mjs"
+    "test:browser": "node scripts/capture-homepage.mjs",
+    "test:e2e": "node scripts/e2e-commerce.mjs"
   },
   "dependencies": {
     "next": "16.4.6",
