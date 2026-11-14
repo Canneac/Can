@@ -250,6 +250,97 @@ try {
     check("Favoriler sayfasında ürün listeleniyor", (await t.locator(".pcard").count()) === 1);
     await tour.close();
 
+    // Üyelik
+    const memberCtx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const m = await memberCtx.newPage();
+    const email = `uye${Date.now()}@example.com`;
+    await m.goto(`${baseUrl}/account`, { waitUntil: "networkidle" });
+    check("Giriş yapmayan kullanıcı /account'tan giriş sayfasına yönlendiriliyor", m.url().includes("/account/login"));
+    await m.goto(`${baseUrl}/account/register`, { waitUntil: "networkidle" });
+    await m.fill('input[name="name"]', "Deniz Test");
+    await m.fill('input[name="email"]', email);
+    await m.fill('input[name="password"]', "123");
+    await m.evaluate(() => document.querySelector('input[name="password"]').removeAttribute("minlength"));
+    await m.getByRole("button", { name: "Üye ol" }).click();
+    await m.waitForURL(/error=/);
+    check("Kısa parola ile üyelik reddediliyor", (await m.locator('.cart-error').innerText()).includes("8 karakter"));
+    await m.fill('input[name="password"]', "guclu-parola-123");
+    await m.getByRole("button", { name: "Üye ol" }).click();
+    await m.waitForURL(/\/account$/);
+    check("Üyelik oluşturuldu ve hesap sayfası açıldı", (await m.locator("h1").textContent()).includes("Merhaba, Deniz"));
+    check("Üstteki hesap simgesi giriş yapıldığını gösteriyor", (await m.locator('a[href="/account"][aria-label^="Hesabım"]').count()) === 1);
+
+    // Favori hesaba kaydolur, başka cihazda (yeni oturum) giriş yapınca gelir
+    await m.goto(`${baseUrl}/shop`, { waitUntil: "networkidle" });
+    await m.locator(".pcard__fav").first().click();
+    await m.waitForTimeout(1500);
+
+    // Profil + ödeme ön doldurma + sipariş hesaba bağlanır
+    await m.goto(`${baseUrl}/account`, { waitUntil: "networkidle" });
+    await m.fill('input[name="phone"]', "05551112233");
+    await m.fill('input[name="city"]', "İzmir");
+    await m.fill('input[name="address"]', "Deneme Mah. Üye Sok. No: 5");
+    await m.getByRole("button", { name: "Kaydet" }).click();
+    await m.waitForURL(/saved=1/);
+    check("Profil ve adres kaydedildi", (await m.locator(".cart-notice").innerText()).includes("kaydedildi"));
+    await m.goto(`${baseUrl}/products/saf-bitkisel-temizlik-seti`, { waitUntil: "networkidle" });
+    await m.locator(".buy-box__add").click();
+    await m.getByText("Sepete eklendi").first().waitFor();
+    await m.goto(`${baseUrl}/checkout`, { waitUntil: "networkidle" });
+    await m.locator('input[name="name"]').waitFor();
+    check("Ödeme formu üye bilgileriyle önceden dolu", (await m.inputValue('input[name="city"]')) === "İzmir" && (await m.inputValue('input[name="email"]')) === email);
+    await m.getByRole("button", { name: "Demo siparişi onayla" }).click();
+    await m.waitForURL(/\/orders\/NV-/);
+    const memberOrder = await m.getByTestId("order-number").innerText();
+    await m.goto(`${baseUrl}/account`, { waitUntil: "networkidle" });
+    check("Sipariş üyenin hesabındaki 'Siparişlerim' listesinde", (await m.locator(".account__orders").innerText()).includes(memberOrder));
+
+    // Çıkış, yanlış parola, doğru parola, açık yönlendirme koruması
+    await m.getByRole("button", { name: "Çıkış yap" }).click();
+    await m.waitForURL(/cikis=1|\/$/);
+    await m.goto(`${baseUrl}/account`, { waitUntil: "networkidle" });
+    check("Çıkıştan sonra /account yine giriş istiyor", m.url().includes("/account/login"));
+    await m.fill('input[name="email"]', email);
+    await m.fill('input[name="password"]', "yanlis-parola-999");
+    await m.getByRole("button", { name: "Giriş yap" }).click();
+    await m.waitForURL(/error=/);
+    check("Yanlış parola genel bir hata mesajı veriyor", (await m.locator('.cart-error').innerText()).includes("hatalı"));
+    await m.goto(`${baseUrl}/account/login?next=//evil.example`, { waitUntil: "networkidle" });
+    await m.fill('input[name="email"]', email);
+    await m.fill('input[name="password"]', "guclu-parola-123");
+    await m.getByRole("button", { name: "Giriş yap" }).click();
+    await m.waitForURL(/\/account$/);
+    check("Dış adrese yönlendirme engelleniyor (giriş sonrası sitede kalınıyor)", new URL(m.url()).host === new URL(baseUrl).host);
+    await m.goto(`${baseUrl}/account/register`, { waitUntil: "networkidle" });
+    check("Giriş yapmış üye üyelik sayfasından hesabına yönlendiriliyor", m.url().endsWith("/account"));
+
+    const device = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const d = await device.newPage();
+    await d.goto(`${baseUrl}/account/login`, { waitUntil: "networkidle" });
+    await d.fill('input[name="email"]', email);
+    await d.fill('input[name="password"]', "guclu-parola-123");
+    await d.getByRole("button", { name: "Giriş yap" }).click();
+    await d.waitForURL(/\/account$/);
+    await d.goto(`${baseUrl}/wishlist`, { waitUntil: "networkidle" });
+    await d.locator(".pcard").first().waitFor({ timeout: 10000 });
+    check("Favori başka cihazda giriş yapınca hesapla geliyor", (await d.locator(".pcard").count()) === 1);
+    await device.close();
+
+    const dup = await memberCtx.newPage();
+    await dup.goto(`${baseUrl}/account`, { waitUntil: "networkidle" });
+    await dup.getByRole("button", { name: "Çıkış yap" }).click();
+    await dup.waitForLoadState("networkidle");
+    await dup.goto(`${baseUrl}/account/register`, { waitUntil: "networkidle" });
+    await dup.fill('input[name="name"]', "Başka Biri");
+    await dup.fill('input[name="email"]', email.toUpperCase());
+    await dup.fill('input[name="password"]', "baska-guclu-parola");
+    await dup.getByRole("button", { name: "Üye ol" }).click();
+    await dup.waitForURL(/error=/);
+    check("Aynı e-posta (büyük/küçük harf fark etmeden) ikinci kez kaydedilemiyor", (await dup.locator('.cart-error').innerText()).includes("zaten"));
+    const apiGuest = await dup.request.get(`${baseUrl}/api/account/favorites`);
+    check("Giriş yapmadan favori API'si 401 veriyor", apiGuest.status() === 401);
+    await memberCtx.close();
+
     // Mobil sepet
     const mobile = await browser.newPage({ viewport: { width: 390, height: 844 } });
     await mobile.goto(`${baseUrl}/products/mono-metal-cam-sehpa?world=modern-form`, { waitUntil: "networkidle" });

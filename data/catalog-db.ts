@@ -61,6 +61,26 @@ export function seedInventory(db: DatabaseSync) {
 /** Sipariş tabloları (yalnızca ekler; mevcut veriye dokunmaz). */
 function ensureCommerceSchema(db: DatabaseSync) {
   db.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL UNIQUE,
+      name TEXT NOT NULL,
+      phone TEXT NOT NULL DEFAULT '',
+      address TEXT NOT NULL DEFAULT '',
+      city TEXT NOT NULL DEFAULT '',
+      password_hash TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS sessions (
+      token_hash TEXT PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id),
+      expires_at INTEGER NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS favorites (
+      user_id INTEGER NOT NULL REFERENCES users(id),
+      product_slug TEXT NOT NULL,
+      PRIMARY KEY (user_id, product_slug)
+    );
     CREATE TABLE IF NOT EXISTS inventory (variant_id TEXT PRIMARY KEY, stock INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS orders (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -87,6 +107,9 @@ function ensureCommerceSchema(db: DatabaseSync) {
       source_world TEXT
     );
   `);
+  // Eski veritabanlarına üyelik bağlantısı ekle (yalnızca sütun yoksa; veriye dokunmaz).
+  const columns = (db.prepare("PRAGMA table_info(orders)").all() as { name: string }[]).map((column) => column.name);
+  if (!columns.includes("user_id")) db.exec("ALTER TABLE orders ADD COLUMN user_id INTEGER");
 }
 
 function readAll<T>(db: DatabaseSync, table: string): T[] {

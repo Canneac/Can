@@ -51,7 +51,7 @@ function newOrderNumber() {
  * Demo sipariş oluşturur. Fiyat ve stok sunucuda yeniden doğrulanır, stok düşer, satır fiyatları kayda geçer.
  * Aynı idempotencyKey ile tekrar çağrılırsa yeni sipariş açılmaz, mevcut sipariş numarası döner.
  */
-export function createDemoOrder(lines: CartLineInput[], customer: Customer, idempotencyKey: string): CreateOrderResult {
+export function createDemoOrder(lines: CartLineInput[], customer: Customer, idempotencyKey: string, userId: number | null = null): CreateOrderResult {
   if (!/^[A-Za-z0-9-]{16,64}$/.test(idempotencyKey)) return { ok: false, code: "invalid_key", message: "Geçersiz işlem anahtarı." };
   const db = openDatabase();
   try {
@@ -77,9 +77,9 @@ export function createDemoOrder(lines: CartLineInput[], customer: Customer, idem
       while (db.prepare("SELECT 1 FROM orders WHERE order_number = ?").get(orderNumber)) orderNumber = newOrderNumber();
       const created = new Date().toISOString();
       const result = db.prepare(
-        `INSERT INTO orders (order_number, idempotency_key, status, is_demo, customer, subtotal_kurus, shipping_kurus, discount_kurus, total_kurus, created_at)
-         VALUES (?, ?, 'received', 1, ?, ?, ?, ?, ?, ?)`,
-      ).run(orderNumber, idempotencyKey, JSON.stringify(customer), quote.subtotalInKurus, quote.shippingInKurus, quote.discountInKurus, quote.totalInKurus, created);
+        `INSERT INTO orders (order_number, idempotency_key, status, is_demo, customer, subtotal_kurus, shipping_kurus, discount_kurus, total_kurus, created_at, user_id)
+         VALUES (?, ?, 'received', 1, ?, ?, ?, ?, ?, ?, ?)`,
+      ).run(orderNumber, idempotencyKey, JSON.stringify(customer), quote.subtotalInKurus, quote.shippingInKurus, quote.discountInKurus, quote.totalInKurus, created, userId);
       const orderId = Number(result.lastInsertRowid);
       const insertItem = db.prepare(
         `INSERT INTO order_items (order_id, product_slug, variant_id, name, variant_label, unit_price_kurus, quantity, source_world) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -150,6 +150,18 @@ export function setOrderStatus(orderNumber: string, status: string): boolean {
   const db = openDatabase();
   try {
     return Number(db.prepare("UPDATE orders SET status = ? WHERE order_number = ?").run(status, orderNumber).changes) === 1;
+  } finally {
+    db.close();
+  }
+}
+
+/** Üyenin kendi siparişleri (yeniden eskiye). */
+export function listOrdersForUser(userId: number): OrderRow[] {
+  const db = openDatabase();
+  try {
+    return (db.prepare("SELECT * FROM orders WHERE user_id = ? ORDER BY id DESC").all(userId) as Record<string, unknown>[]).map((row) =>
+      mapOrder(row, db.prepare("SELECT * FROM order_items WHERE order_id = ? ORDER BY id").all(Number(row.id)) as Record<string, unknown>[]),
+    );
   } finally {
     db.close();
   }

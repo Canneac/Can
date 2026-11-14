@@ -53,3 +53,8 @@ export function toggleFavorite(slug: string) {
   const list = favoriteStore.getSnapshot();
   favoriteStore.set(list.includes(slug) ? list.filter((entry) => entry !== slug) : [...list, slug]);
 }
+
+/** Hesaptaki favorilerle birleştirilmiş listeyi cihaza yazar (üye girişinde). */
+export function setFavorites(slugs: string[]) {
+  favoriteStore.set(slugs);
+}

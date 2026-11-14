@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Environment } from "@/data/environments";
 
 /** Tek bir ortam videosu: "etkin" olunca oynar, değilken durur (sonraki ortam yalnızca önceden yüklenir). */
-function EnvVideo({ environment, active }: { environment: Environment; active: boolean }) {
+function EnvVideo({ environment, active, preload }: { environment: Environment; active: boolean; preload: "auto" | "metadata" }) {
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     const video = ref.current;
@@ -16,7 +16,7 @@ function EnvVideo({ environment, active }: { environment: Environment; active: b
       video.pause();
     }
   }, [active]);
-  return <video ref={ref} src={environment.src} poster={environment.poster} muted loop playsInline preload="auto" aria-hidden="true" />;
+  return <video ref={ref} src={environment.src} poster={environment.poster} muted loop playsInline preload={preload} aria-hidden="true" />;
 }
 
 /**
@@ -63,7 +63,7 @@ export function EnvironmentStage({ environments, playing, reduced }: { environme
               className={`env env--${role} env--t${transition}${reduced ? " env--calm" : ""}`}
               style={{ "--fx": "50%", "--fy": "50%", "--z0": 1, "--z1": 1.07, "--dur": `${environment.seconds + 2}s` } as React.CSSProperties}
             >
-              <EnvVideo environment={environment} active={playing && role !== "next"} />
+              <EnvVideo environment={environment} active={playing && role !== "next"} preload={role === "next" ? "metadata" : "auto"} />
             </div>
           );
         })}

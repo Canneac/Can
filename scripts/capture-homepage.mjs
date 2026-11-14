@@ -59,6 +59,18 @@ try {
   await desktop.evaluate(() => window.scrollTo(0, 0));
   await desktop.screenshot({ path: join(outputDirectory, "nuvessa-desktop.png") });
 
+  // Telefon: giriş düz bir bölüm olmalı (kaydırma efekti yok) ve ekrandan çıkınca video durmalı
+  const phone = await browser.newPage({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  await phone.goto(baseUrl, { waitUntil: "networkidle" });
+  await phone.waitForFunction(() => [...document.querySelectorAll(".env video")].some((video) => video.currentTime > 0), null, { timeout: 15000 });
+  const phoneIntro = await phone.evaluate(() => ({ height: document.querySelector(".cin").offsetHeight, vh: innerHeight, position: getComputedStyle(document.querySelector(".cin__sticky")).position, next: getComputedStyle(document.querySelector(".cin__next")).display }));
+  assert.ok(phoneIntro.height <= phoneIntro.vh * 1.05, `Telefonda giriş tek ekran olmalı (${phoneIntro.height} > ${phoneIntro.vh}).`);
+  assert.equal(phoneIntro.position, "relative");
+  assert.equal(phoneIntro.next, "none");
+  await phone.evaluate(() => window.scrollTo(0, document.querySelector("#koleksiyonlar").getBoundingClientRect().top + scrollY));
+  await phone.waitForFunction(() => [...document.querySelectorAll(".env video")].every((video) => video.paused), null, { timeout: 5000 });
+  ok("Telefonda giriş düz bölüm (kaydırma efekti yok); ekrandan çıkınca video duruyor — çıkışta kasma kaynağı yok");
+  await phone.close();
   // ---- Mağaza, arama, departman ----
   const shop = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   const count = async (url) => { await shop.goto(`${baseUrl}${url}`, { waitUntil: "networkidle" }); return shop.locator(".pcard").count(); };

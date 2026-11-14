@@ -104,7 +104,7 @@ Güvenli ve geri alınabilir işlemler için onay beklenmez. **Önce onay alın�
 | 2 | Ana sayfa | ✅ Gerçek video, dört dünya, kategori, yeni gelenler, Shop the Room, günlük ihtiyaçlar, odalar, footer |
 | 3 | Dört dünya | ✅ Ayrı yerleşimler + renk perdesi geçişi. ⏳ Dünya başına ayrı video/fotoğraf (yalnızca 1 lisanslı video ve 7 fotoğraf var) |
 | 7 | Shop the Room | ✅ Ana sayfada 2 sahne / 7 hotspot kodda tanımlı (`data/scenes.ts`). `/rooms` sayfaları sadeleştirme kararıyla kaldırıldı (bkz. karar günlüğü). ⏳ Sahne yönetimi admin'den |
-| — | Hesap/üyelik, kalıcı favoriler, şifre sıfırlama | ⏳ Favoriler şimdilik cihazda (localStorage) |
+| — | Hesap/üyelik | ✅ Kayıt, giriş, çıkış, güvenli oturum, profil + adres, sipariş geçmişi, hesaba kayıtlı favoriler, ödeme ön doldurma. ⏳ Şifre sıfırlama (e-posta gönderimi gerekir), çoklu adres |
 | — | `/categories/[slug]`, `/search`, sitemap, canonical | ⏳ (`/shop?category=` ve `/shop?q=` çalışıyor) |
 | 8 | Kalite: erişilebilirlik, performans, güvenlik denetimi | ⏳ Temel kontroller var; derin denetim yapılmadı |
 | 9 | Yatırımcı demosu: GitHub, hosting, HTTPS | ⏳ **Onay gerekir** (SQLite sunucusuz ortamda kalıcı değil) |
@@ -131,6 +131,9 @@ Sonuçlar her aşama sonunda dürüstçe işaretlenir: Başarılı / Başarısı
 
 - 14 Kas 2026 — Ana sayfa girişi "20 ortam" olarak yeniden kuruldu (`data/environments.ts`): giriş açılır açılmaz oynar, ortamlar kendiliğinden dönüşür (çözülme / dairesel açılma / yatay silme). **Dürüst sınır:** yalnızca 1 gerçek video var; diğer 19 ortam 7 fotoğrafın farklı kadrajlarıdır. Gerçek video eklemek için `kind: "video"` kaydı yeterli; indirme izni ve telif kontrolü gerekir.
 - 14 Kas 2026 — "Hareketi azalt" cihaz ayarı artık videoyu kapatmaz (Windows'ta animasyon efektleri kapalı olan kullanıcı videoyu göremiyordu); yalnızca yakınlaşma ve kaydırma geçişi kapanır, her zaman "Duraklat" düğmesi vardır.
+
+- 15 Kas 2026 — Üyelik eklendi: parolalar scrypt+tuz ile özetlenir, oturum belirteci rastgele ve veritabanında yalnızca SHA-256 özeti tutulur (httpOnly çerez, 30 gün), giriş denemeleri sınırlıdır, açık yönlendirme engellidir. Üyelik isteğe bağlıdır; misafir alışverişi sürer. Çıkışta cihazdaki favoriler temizlenir.
+- 15 Kas 2026 — Telefonda giriş videosundan çıkış kasması: kaydırmaya bağlı JS/clip-path/filtre efektleri telefon ve dokunmatik cihazlarda kapatıldı; giriş düz bir bölümdür ve ekrandan çıkınca video durur. Masaüstünde sinematik geçiş korunur.
 
 ## Test günlüğü
 

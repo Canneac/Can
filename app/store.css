@@ -216,8 +216,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 @media (max-height: 520px) and (orientation: landscape) { .env-label { display: none; } }
 
 /* ---------- Canlı renk, telefonda kasmayan geçişler ---------- */
-.pcard__img img, .zcol img, .zsplit__img img, .room-scene__image, .zw__hero img, .cin__next img { filter: saturate(1.14) contrast(1.05); }
-.env img, .env video { filter: saturate(1.1) contrast(1.04); }
+.pcard__img img, .zcol img, .zsplit__img img, .room-scene__image { filter: saturate(1.14) contrast(1.05); }
 @media (pointer: coarse), (max-width: 900px) {
   /* clip-path / blur animasyonları telefonda her karede yeniden boyar; yalnızca opacity + transform kullanılır */
   .cin__next { clip-path: none; opacity: var(--reveal); transform: scale(calc(1.06 - var(--reveal) * .06)); will-change: opacity, transform; }
@@ -227,3 +226,27 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
   .cin__stage { will-change: transform; }
 }
 @keyframes env-soft { from { opacity: 0; } to { opacity: 1; } }
+
+/* Telefon / dokunmatik / dar ekran: giriş düz bir bölümdür (kaydırma efekti ve ek katmanlar yok) */
+@media (pointer: coarse), (max-width: 900px) {
+  .cin { height: auto; }
+  .cin__sticky { position: relative; }
+  .cin__next, .cin__scroll { display: none; }
+  .cin__stage { transform: none; will-change: auto; }
+}
+
+/* ---------- Üyelik ---------- */
+.zh__badge--dot { min-width: 8px; width: 8px; height: 8px; padding: 0; top: 8px; right: 7px; }
+.auth { max-width: 520px; }
+.auth__form { display: grid; gap: 4px; }
+.auth__submit { width: 100%; margin-top: 8px; }
+.auth__alt { margin: 18px 0 6px; font-size: 14px; } .auth__alt a, .auth__note a, .account a:not(.zbtn) { text-decoration: underline; text-underline-offset: 3px; }
+.auth__note { margin: 10px 0 0; font-size: 12px; line-height: 1.6; color: var(--mute); }
+.account { max-width: 1100px; }
+.account__grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(24px, 5vw, 72px); }
+.account__h { margin: 0 0 14px; font: 600 12px var(--font-body); letter-spacing: .16em; text-transform: uppercase; } .account__h small { font-weight: 400; color: var(--mute); letter-spacing: .04em; text-transform: none; }
+.account__orders { margin: 0 0 28px; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+.account__orders li { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+.account__orders a { display: grid; gap: 2px; text-decoration: none !important; } .account__orders span { color: var(--mute); font-size: 12px; }
+.account__logout { margin-top: 20px; }
+@media (max-width: 760px) { .account__grid { grid-template-columns: 1fr; } }

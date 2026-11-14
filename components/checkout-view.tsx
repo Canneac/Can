@@ -15,7 +15,9 @@ const fields = [
   { name: "address", label: "Açık adres", autoComplete: "street-address", type: "text" },
 ] as const;
 
-export function CheckoutView() {
+type Member = { name: string; email: string; phone: string; address: string; city: string };
+
+export function CheckoutView({ member }: { member: Member | null }) {
   const router = useRouter();
   const lines = useCart();
   const { quote, loading, error } = useQuote();
@@ -74,10 +76,11 @@ export function CheckoutView() {
       <form className="checkout-form" onSubmit={submit} noValidate>
         <p className="demo-banner" role="note"><b>DEMO ÖDEME.</b> Bu bir tasarım demosudur; kart bilgisi istenmez, gerçek para çekilmez, gerçek sipariş oluşmaz.</p>
         <h2>Teslimat bilgileri</h2>
+        {member ? <p className="auth__note">Üye olarak giriş yaptınız: bilgileriniz dolduruldu ve sipariş hesabınıza kaydedilecek.</p> : <p className="auth__note">Üye olmadan da alışveriş yapabilirsiniz. <Link href="/account/login?next=/checkout">Giriş yap</Link> ya da <Link href="/account/register?next=/checkout">üye ol</Link>.</p>}
         {fields.map((field) => (
           <label key={field.name} className="checkout-field">
             <span>{field.label}</span>
-            <input name={field.name} type={field.type} autoComplete={field.autoComplete} required aria-invalid={Boolean(errors[field.name])} aria-describedby={errors[field.name] ? `err-${field.name}` : undefined} />
+            <input name={field.name} type={field.type} autoComplete={field.autoComplete} defaultValue={member?.[field.name]} required aria-invalid={Boolean(errors[field.name])} aria-describedby={errors[field.name] ? `err-${field.name}` : undefined} />
             {errors[field.name] && <small id={`err-${field.name}`} role="alert">{errors[field.name]}</small>}
           </label>
         ))}

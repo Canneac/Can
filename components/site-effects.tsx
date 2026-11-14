@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { setFavorites } from "@/lib/cart-store";
 
 /**
  * Küçük dokunuşlar: (1) bölümler görününce hafifçe yukarı süzülerek belirir,
@@ -8,6 +9,16 @@ import { useEffect } from "react";
  * Azaltılmış hareket tercihinde ikisi de devre dışıdır.
  */
 export function SiteEffects() {
+  // Çıkış yapıldığında (?cikis=1) bu cihazdaki favoriler temizlenir: ortak kullanılan cihazda bir sonraki kişiye geçmez.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("cikis") === "1") {
+      setFavorites([]);
+      url.searchParams.delete("cikis");
+      window.history.replaceState(null, "", url.pathname + url.search + url.hash);
+    }
+  }, []);
+
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const root = document.documentElement;

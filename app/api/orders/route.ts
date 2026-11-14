@@ -1,4 +1,5 @@
 import { createDemoOrder, validateCustomer } from "@/lib/orders";
+import { currentMember } from "@/lib/user-auth";
 import type { CartLineInput } from "@/domain/cart";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +23,8 @@ export async function POST(request: Request) {
   if (!Array.isArray(body.lines) || body.lines.length === 0 || body.lines.length > 60) return Response.json({ error: "Sepet boş." }, { status: 400 });
   const customer = validateCustomer(body.customer);
   if (!customer.ok) return Response.json({ error: "Lütfen formdaki alanları kontrol edin.", fields: customer.errors }, { status: 422 });
-  const result = createDemoOrder(body.lines as CartLineInput[], customer.value, String(body.idempotencyKey ?? ""));
+  const member = await currentMember();
+  const result = createDemoOrder(body.lines as CartLineInput[], customer.value, String(body.idempotencyKey ?? ""), member?.id ?? null);
   if (result.ok) return Response.json({ orderNumber: result.orderNumber, replayed: result.replayed, demo: true }, { status: result.replayed ? 200 : 201 });
   const status = result.code === "changed" ? 409 : result.code === "server" ? 500 : 400;
   return Response.json({ error: result.message, code: result.code, quote: result.quote }, { status });

@@ -3,12 +3,16 @@
 import Link from "next/link";
 import { useCart, useFavorites } from "@/lib/cart-store";
 
-export function HeaderActions() {
+export function HeaderActions({ member }: { member: string | null }) {
   const cart = useCart();
   const favorites = useFavorites();
   const cartCount = cart.reduce((sum, line) => sum + line.quantity, 0);
   return (
     <>
+      <Link href="/account" aria-label={member ? `Hesabım, ${member}` : "Giriş yap veya üye ol"} className="zh__btn">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.8" /><path d="M4.5 20c.8-4 3.6-6 7.5-6s6.7 2 7.5 6" /></svg>
+        {member && <b className="zh__badge zh__badge--dot" aria-hidden="true" />}
+      </Link>
       <Link href="/wishlist" aria-label={`Favoriler, ${favorites.length} ürün`} className="zh__btn">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.7 3.7 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.3 0 5.4 3.200 4.200 6.700-1.700 4.700-9.200 9.300-9.200 9.300z" /></svg>
         {favorites.length > 0 && <b className="zh__badge">{favorites.length}</b>}

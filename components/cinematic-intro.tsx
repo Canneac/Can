@@ -13,7 +13,8 @@ import { environments } from "@/data/environments";
  *
  * Video giriş açılır açılmaz kendiliğinden oynar ve durdurma düğmesi yoktur (kullanıcı kararı).
  * Cihaz "hareketi azalt" diyorsa yalnızca kaydırma geçişi ve yakınlaşma kapanır; video yine oynar.
- * Giriş büyük ölçüde kaydırılıp geçilince video ve ortam döngüsü durur, geri gelince devam eder.
+ * Giriş ekrandan çıkınca video ve ortam döngüsü durur, geri gelince devam eder.
+ * Telefon/dokunmatik cihazlarda kaydırma efekti kapalıdır (CSS ile düz bölüm); masaüstünde çalışır.
  */
 export function CinematicIntro({ nextImage, nextAlt, nextTitle }: { nextImage: string; nextAlt: string; nextTitle: string }) {
   const root = useRef<HTMLElement>(null);
@@ -35,29 +36,45 @@ export function CinematicIntro({ nextImage, nextAlt, nextTitle }: { nextImage: s
   const motion = !reduced;
 
   useEffect(() => {
-    if (!motion) return;
+    const section = root.current;
+    const stage = sticky.current;
+    if (!section || !stage) return;
+    // Telefon/dokunmatik/dar ekran: kaydırma efekti YOK. Giriş tek parça bir bölümdür ve sayfa doğal (GPU) kaydırmasıyla
+    // akar; yalnızca ekrandan çıkınca video durur. Böylece çıkışta JavaScript çalışmaz ve kasma olmaz.
+    const lite = window.matchMedia("(max-width: 900px), (pointer: coarse)").matches;
+    if (lite || !motion) {
+      const observer = new IntersectionObserver(([entry]) => setActive(entry.isIntersecting), { threshold: 0.12 });
+      observer.observe(section);
+      return () => observer.disconnect();
+    }
+
+    // Masaüstü: kaydırmaya bağlı sinematik geçiş. Ölçümler önbelleğe alınır; kaydırmada yerleşim okunmaz.
     let frame = 0;
+    let top = 0;
+    let range = 1;
+    const measure = () => {
+      top = section.getBoundingClientRect().top + window.scrollY;
+      range = Math.max(1, section.offsetHeight - window.innerHeight);
+    };
     const apply = () => {
       frame = 0;
-      const section = root.current;
-      const stage = sticky.current;
-      if (!section || !stage) return;
-      const range = section.offsetHeight - window.innerHeight;
-      const progress = range > 0 ? Math.min(1, Math.max(0, -section.getBoundingClientRect().top / range)) : 0;
+      const progress = Math.min(1, Math.max(0, (window.scrollY - top) / range));
       const reveal = Math.min(1, Math.max(0, (progress - 0.3) / 0.6));
-      stage.style.setProperty("--zoom", String(Math.min(1, progress / 0.9)));
-      stage.style.setProperty("--reveal", String(reveal));
-      stage.style.setProperty("--title", String(Math.max(0, 1 - progress / 0.25)));
+      stage.style.setProperty("--zoom", progress.toFixed(3));
+      stage.style.setProperty("--reveal", reveal.toFixed(3));
+      stage.style.setProperty("--title", Math.max(0, 1 - progress / 0.25).toFixed(3));
       const nowActive = progress < 0.6;
       setActive((value) => (value === nowActive ? value : nowActive));
     };
     const onScroll = () => { if (!frame) frame = requestAnimationFrame(apply); };
+    const onResize = () => { measure(); onScroll(); };
+    measure();
     apply();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
+    window.addEventListener("resize", onResize);
     return () => {
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
+      window.removeEventListener("resize", onResize);
       if (frame) cancelAnimationFrame(frame);
     };
   }, [motion]);
