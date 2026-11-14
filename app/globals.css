@@ -740,6 +740,163 @@ a:hover .arrow-icon { transform: translateX(4px); }
   .catalog-card__details > strong { font-size: 14px; }
 }
 
+/* ===== Ana sayfa, odalar, Shop the Room, dünya sayfaları ===== */
+.button--outline { color: var(--espresso); border: 1px solid var(--espresso); background: transparent; }
+.button--outline:hover { color: var(--ivory); background: var(--espresso); }
+.button--outline-light { color: var(--ivory); border: 1px solid rgba(242,237,229,.6); }
+.button--outline-light:hover { color: var(--espresso); background: var(--ivory); }
+.hero__actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.hero__copy .hero__description { margin: 22px 0 28px; }
+.text-link { font-size: 13px; text-decoration: underline; text-underline-offset: 4px; white-space: nowrap; }
+.home-block { padding: 84px var(--page-gutter) 0; }
+.home-block .section-heading { margin-bottom: 26px; }
+.home-block .catalog-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 40px 20px; }
+.home-worlds { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.home-world { position: relative; display: block; isolation: isolate; aspect-ratio: 3 / 4; overflow: hidden; color: #fff; }
+.home-world img { object-fit: cover; z-index: -2; transition: transform .8s cubic-bezier(.2,.7,.2,1); }
+.home-world:hover img { transform: scale(1.06); }
+.home-world::after { content: ""; position: absolute; inset: 0; z-index: -1; }
+.home-world--modern::after { background: linear-gradient(0deg, rgba(14,48,58,.88), rgba(31,79,90,.15) 65%); }
+.home-world--soft::after { background: linear-gradient(0deg, rgba(122,110,78,.8), rgba(233,220,195,.05) 65%); }
+.home-world--heritage::after { background: linear-gradient(0deg, rgba(48,16,26,.92), rgba(90,34,48,.2) 65%); }
+.home-world--art::after { background: linear-gradient(0deg, rgba(26,18,60,.92), rgba(91,42,130,.25) 65%); }
+.home-world__text { position: absolute; left: 20px; right: 20px; bottom: 20px; display: flex; flex-direction: column; gap: 6px; }
+.home-world__text strong { font: 500 clamp(26px, 2.6vw, 38px)/1 var(--font-display); }
+.home-world__text small { font-size: 13px; opacity: .9; }
+.home-rooms { display: flex; flex-wrap: wrap; gap: 10px; }
+.home-rooms a { padding: 12px 22px; border: 1px solid rgba(33,27,25,.3); border-radius: 99px; font-size: 14px; transition: background .2s, color .2s; }
+.home-rooms a:hover { color: var(--ivory); background: var(--espresso); }
+.home-block--essentials .room-scenes__note { margin-top: 0; }
+.manifesto { margin-top: 90px; }
+.site-footer--shop { margin-top: 90px; }
+.site-footer--shop .site-footer__top { grid-template-columns: 1.1fr 1.4fr 1fr 1fr; }
+.site-footer--shop .site-footer__top > p { font-size: 13px; letter-spacing: .02em; }
+.site-footer--shop nav a { font-size: 14px; }
+.site-footer--shop .site-footer__bottom { font-size: 12px; flex-wrap: wrap; }
+.room-tiles { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.page-title--small { font-size: clamp(30px, 3.4vw, 44px); margin-bottom: 10px; }
+.room-scenes__note { margin: 0 0 20px; color: var(--walnut); font-size: 14px; }
+.room-scenes__list { display: grid; gap: 34px; margin-bottom: 40px; }
+.room-scenes__list figure { margin: 0; } .room-scenes__list figcaption { margin-top: 8px; font-size: 13px; color: var(--muted); }
+.room-products { margin-top: 10px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+.room-scene { position: relative; width: 100%; overflow: hidden; background: #d7c9b8; }
+.room-scene__image { object-fit: cover; }
+.room-scene__dot { position: absolute; z-index: 3; width: 36px; height: 36px; margin: -18px 0 0 -18px; padding: 0; display: grid; place-items: center; border: 2px solid #fff; border-radius: 50%; color: #fff; background: rgba(33,27,25,.55); backdrop-filter: blur(3px); font: 700 13px var(--font-body); cursor: pointer; animation: dot-pulse 2.4s ease-out infinite; }
+.room-scene__dot.is-active, .room-scene__dot:hover { background: var(--burgundy); animation: none; }
+@keyframes dot-pulse { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,.55); } 70%, 100% { box-shadow: 0 0 0 14px rgba(255,255,255,0); } }
+.room-scene__card { position: absolute; z-index: 4; width: min(320px, 70vw); display: grid; grid-template-columns: 76px 1fr; gap: 12px; padding: 12px; background: var(--ivory); box-shadow: 0 18px 40px rgba(0,0,0,.28); }
+.room-scene__card--right { transform: translateX(22px); } .room-scene__card--left { transform: translateX(calc(-100% - 22px)); }
+.room-scene__card--down { margin-top: -14px; } .room-scene__card--up { margin-top: 0; translate: 0 calc(-100% + 14px); }
+.room-scene__thumb { position: relative; width: 76px; aspect-ratio: 1; display: grid; place-items: center; background: #e3d9ca; overflow: hidden; }
+.room-scene__thumb img { object-fit: cover; } .room-scene__icon { width: 58%; color: var(--walnut); }
+.room-scene__info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.room-scene__info small { color: var(--muted); font-size: 11px; } .room-scene__info strong { font: 500 18px/1.15 var(--font-display); } .room-scene__info > span { font-size: 13px; }
+.room-scene__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 6px; }
+.room-scene__actions > a:first-child { font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+.room-scene__actions .add-to-cart__button { min-height: 34px; padding: 0 12px; font-size: 10px; }
+.room-scene__close { position: absolute; top: 4px; right: 6px; border: 0; background: none; font-size: 22px; line-height: 1; cursor: pointer; color: var(--espresso); }
+
+/* Dünya geçişi: kısa renk perdesi (CSS; video değil) */
+.world-wipe { position: fixed; inset: 0; z-index: 9999; pointer-events: none; animation: world-wipe .8s cubic-bezier(.7,0,.25,1) both; }
+@keyframes world-wipe { 0% { clip-path: inset(0 100% 0 0); } 45% { clip-path: inset(0 0 0 0); } 62% { clip-path: inset(0 0 0 0); } 100% { clip-path: inset(0 0 0 100%); } }
+.wd { animation: wd-enter .7s ease-out both; }
+@keyframes wd-enter { from { opacity: .0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+.wd-kicker { margin: 0 0 14px; font-size: 12px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; }
+.wd-lead { max-width: 480px; margin: 0 0 26px; font-size: 17px; line-height: 1.7; }
+.wd-button { display: inline-flex; align-items: center; min-height: 48px; padding: 0 26px; border: 1px solid currentColor; font: 700 12px var(--font-body); letter-spacing: .12em; text-transform: uppercase; transition: background .25s, color .25s; }
+.wd-palette { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 28px 0 0; padding: 0; list-style: none; font-size: 12px; }
+.wd-palette li { display: inline-flex; align-items: center; gap: 8px; } .wd-palette i { width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(128,128,128,.5); }
+.wd-empty { padding: 30px 0; }
+
+/* MODERN FORM: keskin bölmeler, ince çizgiler */
+.wd--modern { background: #f4f3ef; color: #172a31; }
+.wdm-hero { display: grid; grid-template-columns: 5fr 7fr; min-height: 640px; background: #dbe8ec; border-bottom: 1px solid #172a31; }
+.wdm-hero__text { padding: 70px var(--page-gutter) 60px; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid #172a31; }
+.wdm-hero h1 { margin: 0 0 24px; font: 600 clamp(54px, 7vw, 104px)/.92 var(--font-body); letter-spacing: -.05em; text-transform: uppercase; color: #1f4f5a; }
+.wdm-hero .wd-button { align-self: flex-start; color: #172a31; } .wdm-hero .wd-button:hover { color: #fff; background: #1f4f5a; }
+.wdm-hero__media { position: relative; isolation: isolate; overflow: hidden; min-height: 420px; background: #1c2a30; }
+.wdm-hero__media img { object-fit: cover; }
+.wdm-hero__label { position: absolute; left: 0; bottom: 0; padding: 14px 22px; color: #fff; background: #1f4f5a; font: 600 13px var(--font-body); letter-spacing: .14em; text-transform: uppercase; z-index: 1; }
+.wdm-highlights { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid #172a31; }
+.wdm-highlights div { padding: 30px var(--page-gutter) 30px 28px; border-right: 1px solid #172a31; } .wdm-highlights div:last-child { border-right: 0; }
+.wdm-highlights b { font: 600 13px var(--font-body); color: #1f4f5a; } .wdm-highlights p { margin: 8px 0 0; font: 500 22px/1.2 var(--font-display); }
+.wdm-products { padding: 70px var(--page-gutter) 40px; } .wdm-products h2 { margin: 0 0 30px; font: 600 40px var(--font-body); letter-spacing: -.04em; text-transform: uppercase; } .wdm-products h2 small { font-size: 14px; font-weight: 500; color: #5f737b; margin-left: 10px; letter-spacing: 0; text-transform: none; }
+.wdm-products .catalog-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border-top: 1px solid #172a31; border-left: 1px solid #172a31; padding-top: 0; }
+.wdm-products .catalog-card { padding: 16px; border-right: 1px solid #172a31; border-bottom: 1px solid #172a31; }
+.wd--modern .catalog-card:hover { transform: none; } .wd--modern .catalog-card__image { aspect-ratio: 1 / 1; }
+.wd--modern .add-to-cart__button { background: #1f4f5a; border-color: #1f4f5a; } .wd--modern .add-to-cart__button--ghost { color: #1f4f5a; background: transparent; }
+
+/* SOFT LIVING: kemer, ortalı sıcak başlık, yatay kaydırma */
+.wd--soft { background: #f6efe1; color: #3a3a2c; }
+.wds-hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 64px var(--page-gutter) 56px; background: linear-gradient(180deg, #efe3cc, #f6efe1); }
+.wds-hero h1 { margin: 0 0 16px; font: 400 clamp(56px, 8vw, 112px)/.95 var(--font-display); letter-spacing: -.03em; } .wds-hero h1 em { color: #7c8a6b; }
+.wds-hero .wd-lead { margin-inline: auto; }
+.wds-arch { position: relative; width: min(520px, 90%); aspect-ratio: 4 / 5; overflow: hidden; border-radius: 999px 999px 28px 28px; margin: 10px 0 0; box-shadow: 0 24px 60px rgba(120,96,60,.22); } .wds-arch img { object-fit: cover; }
+.wds-rail-section { padding: 60px 0 20px; } .wds-rail-section h2 { margin: 0 var(--page-gutter) 22px; font: 400 clamp(30px, 3.6vw, 48px) var(--font-display); }
+.wds-rail { position: relative; display: flex; gap: 18px; padding: 6px var(--page-gutter) 22px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: thin; }
+.wds-rail .catalog-card { flex: 0 0 min(280px, 74vw); scroll-snap-align: start; padding: 12px; background: #fffaf0; border-radius: 22px; }
+.wds-rail .catalog-card__image { border-radius: 16px; } .wds-hint { margin: 0 var(--page-gutter); font-size: 13px; color: #7c8a6b; }
+.wd--soft .catalog-card:hover { transform: none; }
+.wd--soft .add-to-cart__button { background: #6f7d5f; border-color: #6f7d5f; border-radius: 99px; } .wd--soft .add-to-cart__button--ghost { color: #4f5b43; background: transparent; }
+.wds-materials { padding: 40px var(--page-gutter) 20px; text-align: center; background: #e6ead9; margin-top: 40px; } .wds-materials h2 { font: 400 32px var(--font-display); margin: 20px 0; }
+.wds-materials div { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; padding-bottom: 36px; } .wds-materials a { padding: 12px 28px; border-radius: 99px; background: #fffaf0; font-size: 15px; }
+
+/* HERITAGE: koyu bordo, çift çerçeve, klasik ortalı yerleşim */
+.wd--heritage { background: #2b1b17; color: #efe6d6; }
+.wdh-hero { position: relative; isolation: isolate; min-height: 680px; display: grid; place-items: center; padding: 60px var(--page-gutter); overflow: hidden; } .wdh-hero img { object-fit: cover; z-index: -2; }
+.wdh-hero__shade { position: absolute; inset: 0; z-index: -1; background: radial-gradient(circle, rgba(43,18,24,.55), rgba(30,12,16,.92)); }
+.wdh-frame { max-width: 640px; padding: 54px 48px; text-align: center; border: 1px solid #bea580; outline: 1px solid rgba(190,165,128,.5); outline-offset: 8px; background: rgba(43,18,24,.55); }
+.wdh-frame h1 { margin: 0; font: 400 clamp(54px, 8vw, 100px)/1 var(--font-display); letter-spacing: .02em; text-transform: uppercase; } .wdh-frame .wd-kicker { color: #d9c39e; }
+.wdh-rule { display: block; width: 90px; height: 1px; margin: 22px auto; background: #bea580; } .wdh-frame .wd-lead { margin-inline: auto; } .wdh-frame .wd-button { color: #efe6d6; } .wdh-frame .wd-button:hover { color: #2b1b17; background: #efe6d6; }
+.wdh-intro { padding: 50px var(--page-gutter) 10px; text-align: center; } .wdh-intro p { margin: 26px 0 0; font: italic 400 clamp(28px, 3.4vw, 46px) var(--font-display); color: #d9c39e; } .wdh-intro .wd-palette { justify-content: center; margin-top: 0; }
+.wdh-products { padding: 50px var(--page-gutter) 30px; } .wdh-products h2 { margin: 0 0 30px; text-align: center; font: 400 clamp(32px, 4vw, 54px) var(--font-display); }
+.wdh-products .catalog-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 36px 28px; }
+.wdh-products .catalog-card { padding: 14px; background: rgba(239,230,214,.06); border: 1px solid rgba(190,165,128,.45); } .wd--heritage .catalog-card:hover { transform: none; }
+.wd--heritage .catalog-card__details p, .wd--heritage .catalog-card__worlds a { color: #cdb892; } .wd--heritage .catalog-card__details h3 a, .wd--heritage .catalog-card__details > strong { color: #efe6d6; }
+.wd--heritage .add-to-cart__button { background: #bea580; border-color: #bea580; color: #2b1b17; } .wd--heritage .add-to-cart__button--ghost { background: transparent; color: #efe6d6; border-color: #bea580; }
+.wd--heritage .site-footer--shop { margin-top: 60px; }
+
+/* ART HOUSE: gece mavisi/mor, kaydırılmış dev başlık, kolaj */
+.wd--art { background: #12142e; color: #ece7f7; }
+.wd--art .site-header, .wd--art .category-bar, .wd--heritage .site-header, .wd--heritage .category-bar { color: var(--espresso); }
+.wda-hero { position: relative; min-height: 700px; padding: 60px var(--page-gutter) 70px; overflow: hidden; background: radial-gradient(circle at 80% 20%, #4a2a73, transparent 55%), #12142e; }
+.wda-hero h1 { position: relative; z-index: 2; margin: 0; display: flex; flex-direction: column; font: 600 clamp(88px, 15vw, 230px)/.82 var(--font-body); letter-spacing: -.07em; text-transform: uppercase; mix-blend-mode: screen; }
+.wda-hero h1 span:first-child { color: transparent; -webkit-text-stroke: 2px #d96bff; } .wda-hero h1 span:last-child { margin-left: 12vw; color: #ece7f7; }
+.wda-hero__image { position: absolute; z-index: 1; right: 8vw; top: 90px; width: min(34vw, 420px); aspect-ratio: 3 / 4; overflow: hidden; transform: rotate(3deg); border: 1px solid #d96bff; } .wda-hero__image img { object-fit: cover; }
+.wda-hero__note { position: relative; z-index: 3; max-width: 400px; margin-top: 36px; padding: 22px; background: rgba(18,20,46,.86); border-left: 3px solid #d96bff; } .wda-hero__note .wd-lead { font-size: 15px; } .wda-hero__note .wd-button { color: #ece7f7; } .wda-hero__note .wd-button:hover { background: #d96bff; color: #12142e; border-color: #d96bff; }
+.wda-hero .wd-palette { position: relative; z-index: 3; }
+.wda-products { padding: 70px var(--page-gutter) 30px; } .wda-products h2 { margin: 0 0 34px; max-width: 12ch; font: 600 clamp(36px, 5vw, 72px)/.95 var(--font-body); letter-spacing: -.04em; text-transform: uppercase; color: #d96bff; }
+.wda-collage { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; gap: 26px 18px !important; }
+.wda-collage .catalog-card { grid-column: span 2; } .wda-collage .catalog-card:nth-child(5n+1) { grid-column: span 3; } .wda-collage .catalog-card:nth-child(5n+4) { grid-column: span 3; margin-top: 40px; } .wda-collage .catalog-card:nth-child(5n+2) { margin-top: 56px; }
+.wd--art .catalog-card:hover { transform: rotate(-.6deg); }
+.wd--art .catalog-card__details p, .wd--art .catalog-card__worlds a { color: #b8aedb; } .wd--art .catalog-card__details h3 a, .wd--art .catalog-card__details > strong { color: #ece7f7; }
+.wd--art .add-to-cart__button { background: #d96bff; border-color: #d96bff; color: #12142e; } .wd--art .add-to-cart__button--ghost { background: transparent; color: #ece7f7; border-color: #d96bff; }
+.wd--art .catalog-card__stock--in { color: #9be39b; } .wd--art .catalog-card__stock--low { color: #ffc27a; } .wd--art .catalog-card__stock--out { color: #ff9b9b; }
+.wd--art .site-footer--shop { margin-top: 60px; }
+
+@media (prefers-reduced-motion: reduce) { .wd, .room-scene__dot, .world-wipe { animation: none; } .world-wipe { display: none; } }
+@media (max-width: 1100px) {
+  .home-block .catalog-grid, .room-products, .wdm-products .catalog-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .home-worlds { grid-template-columns: repeat(2, minmax(0, 1fr)); } .room-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .wdh-products .catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .wdm-hero { grid-template-columns: 1fr; } .wdm-hero__text { border-right: 0; border-bottom: 1px solid #172a31; }
+  .wda-collage .catalog-card, .wda-collage .catalog-card:nth-child(5n+1), .wda-collage .catalog-card:nth-child(5n+4) { grid-column: span 3; }
+}
+@media (max-width: 700px) {
+  .home-block { padding-top: 60px; } .home-block .catalog-grid, .room-products { grid-template-columns: 1fr 1fr; gap: 28px 12px; }
+  .home-worlds { gap: 8px; } .home-world { aspect-ratio: 4 / 5; } .home-world__text { left: 12px; right: 12px; bottom: 12px; } .home-world__text small { display: none; }
+  .room-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hero__actions .button { flex: 1 1 100%; }
+  .site-footer--shop .site-footer__top { grid-template-columns: 1fr 1fr; } .site-footer--shop .site-footer__top > p { grid-column: 1 / -1; }
+  .room-scene__card { position: fixed; left: 12px !important; right: 12px; top: auto !important; bottom: 12px; width: auto; transform: none !important; translate: none !important; margin: 0 !important; }
+  .wdm-highlights { grid-template-columns: 1fr; } .wdm-highlights div { border-right: 0; border-bottom: 1px solid #172a31; }
+  .wdm-products .catalog-grid { grid-template-columns: 1fr 1fr; }
+  .wdh-products .catalog-grid { grid-template-columns: 1fr 1fr; gap: 18px 10px; } .wdh-frame { padding: 36px 22px; }
+  .wda-hero { min-height: 640px; } .wda-hero__image { right: 5vw; top: 200px; width: 46vw; }
+  .wda-collage { grid-template-columns: 1fr 1fr !important; } .wda-collage .catalog-card, .wda-collage .catalog-card:nth-child(n) { grid-column: span 1; margin-top: 0; }
+}
+
 /* ===== Yönetim paneli ===== */
 .admin { min-height: 100vh; background: #f5f3ef; color: var(--espresso); font-size: 14px; }
 .admin__bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; padding: 14px var(--page-gutter); background: var(--espresso); color: var(--ivory); }

@@ -95,18 +95,19 @@ Güvenli ve geri alınabilir işlemler için onay beklenmez. **Önce onay alın�
 | # | Aşama | Durum |
 |---|---|---|
 | 0 | Kod tabanı tespiti, geri dönüş noktası | ✅ Tamamlandı |
-| 1 | `/shop` yenileme (hero, gezinme, kategori, kartlar, DB senkronu) | ✅ İlk sürüm (commit `2f2e7a2`); filtre/favori/sepet ikonları aşama 4–5 ile |
-| 4a | Katalog modeli (marka, renk, malzeme, stok, özellik, oda) + gelişmiş filtre | ⏳ |
-| 4b | Ürün detayı: varyant, stok, adet, sepete ekle, ilgili ürünler | ⏳ |
-| 5a | Dünya renkli kalıcı sepet + sunucu doğrulama | ⏳ |
-| 5b | Demo ödeme + sipariş kaydı | ⏳ |
-| 6 | Admin paneli (güvenli giriş, ürün/stok/kategori/sipariş) | ⏳ |
-| 2 | Ana sayfa (video, dört dünya, kategori, oda, editoryal, footer) | ⏳ (video + temel ana sayfa mevcut) |
-| 3 | Dört dünyanın ayrı kompozisyonları | ⏳ (temel dünya sayfaları mevcut) |
-| 7 | Odaya göre, Shop the Room, koleksiyonlar | ⏳ (`/rooms` iskelet) |
-| — | Hesap/üyelik, favoriler (kalıcı), şifre sıfırlama | ⏳ |
-| 8 | Kalite: mobil, erişilebilirlik, performans, güvenlik | ⏳ sürekli |
-| 9 | Yatırımcı demosu: GitHub, hosting, HTTPS, mobil erişim | ⏳ **onay gerekir** |
+| 1 | `/shop` yenileme | ✅ Hero, gezinme, kategori, filtre (marka/renk/malzeme/stok/fiyat), kartlar |
+| 4a | Katalog modeli (marka, renk, stok, özellik, oda, varyant) | ✅ 30 demo ürün, 17 kategori, 10 oda, 4 marka hattı; SQLite, sürümlü ve yedekli tohum |
+| 4b | Ürün detayı | ✅ Varyant, stok, adet, sepete ekle, özellikler, ilgili ürünler. ⏳ Çoklu galeri/yakınlaştırma (tek görsel var) |
+| 5a | Dünya renkli kalıcı sepet + sunucu doğrulama | ✅ |
+| 5b | Demo ödeme + sipariş kaydı | ✅ Idempotent, stok düşer, fiyat anlık görüntüsü |
+| 6 | Admin paneli | ✅ Güvenli giriş, ürün/stok/fiyat, kategori, marka, sipariş. ⏳ Tedarikçi kaydı, banner/sahne yönetimi |
+| 2 | Ana sayfa | ✅ Gerçek video, dört dünya, kategori, yeni gelenler, Shop the Room, günlük ihtiyaçlar, odalar, footer |
+| 3 | Dört dünya | ✅ Ayrı yerleşimler + renk perdesi geçişi. ⏳ Dünya başına ayrı video/fotoğraf (yalnızca 1 lisanslı video ve 7 fotoğraf var) |
+| 7 | Odaya göre, Shop the Room | ✅ `/rooms`, `/rooms/[slug]`, 2 sahne / 7 hotspot. ⏳ Sahne yönetimi admin'den |
+| — | Hesap/üyelik, kalıcı favoriler, şifre sıfırlama | ⏳ Favoriler şimdilik cihazda (localStorage) |
+| — | `/categories/[slug]`, `/search`, sitemap, canonical | ⏳ (`/shop?category=` ve `/shop?q=` çalışıyor) |
+| 8 | Kalite: erişilebilirlik, performans, güvenlik denetimi | ⏳ Temel kontroller var; derin denetim yapılmadı |
+| 9 | Yatırımcı demosu: GitHub, hosting, HTTPS | ⏳ **Onay gerekir** (SQLite sunucusuz ortamda kalıcı değil) |
 
 ## 14. Kabul testleri (40+ madde)
 
@@ -116,8 +117,14 @@ Sonuçlar her aşama sonunda dürüstçe işaretlenir: Başarılı / Başarısı
 
 - 14 Kas 2026 — Proje klasörü doğrulandı; tek kod tabanı; `/shop` hero'su boş olduğu için yeniden tasarlandı.
 - 14 Kas 2026 — Katalog SQLite'ta tutulur; sürümlü, yedekli, silmeyen senkron.
+- 14 Kas 2026 — Sepet satırı = varyant + kaynak dünya; fiyat/toplam yalnızca sunucuda hesaplanır (`/api/cart/quote`); sipariş idempotency anahtarıyla.
+- 14 Kas 2026 — Stok `inventory` tablosunda tutulur; ürün kaydındaki stok yalnızca başlangıç değeridir. Yönetici düzenlemeleri (`adminEdited`) tohum güncellemesinde ezilmez.
+- 14 Kas 2026 — Yönetici parolası yalnızca `.env.local`'da (`npm run setup:admin`); Git'e girmez.
+- 14 Kas 2026 — Dünya geçişi bir CSS renk perdesidir (video değil); `prefers-reduced-motion`'da atlanır.
 - 14 Kas 2026 — Fotoğrafı olmayan demo ürünler çizgi ikonlu panelle ve "Demo görsel" etiketiyle gösterilir.
 
 ## Test günlüğü
 
-(Aşama sonlarında güncellenir.)
+Son çalıştırma (14 Kas 2026): `npm test` 14/14 ✔ · `npm run lint` ✔ · `tsc` ✔ · `npm run build` ✔ · `npm run test:browser` ✔ (masaüstü + mobil, gerçek video oynatma, hotspot) · `npm run test:e2e` 48/48 ✔ (üretim derlemesi, ayrı veri klasörü).
+
+Kabul testi özeti (bölüm 39): 1–2 ✔, 3 ✔ (video currentTime>0), 4–5 ✔, 6 ✔, 7 ✔ · 8–12 ✔ · 13–16 ✔ · 17–18 ✔ · 19–26 ✔ · 27–30 ✔ · 31–35 ✔ · 36–39, 41 ✔ (390/375/768 px; sepet mobil e2e) · 40 ⚠ yalnızca "video mobilde yüklenmez" tasarımıyla (≤768px'te video kapalı; gerçek cihaz ölçümü yapılmadı) · 42–47 ⏳ yayın aşaması yapılmadı.

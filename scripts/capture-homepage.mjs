@@ -39,13 +39,14 @@ try {
   await desktop.evaluate(() => document.fonts.ready);
   await desktop.waitForFunction(() => document.querySelector("video")?.currentTime > 0);
 
-  await desktop.locator(".room-hotspot--mirror summary").click();
-  assert.equal(await desktop.locator(".room-hotspot--mirror").getAttribute("open") !== null, true, "Oda hotspot detayı açılmalı.");
-  assert.match(await desktop.locator(".room-hotspot--mirror .hotspot-card").innerText(), /Antik tonlu ayna/);
-  await desktop.locator(".room-hotspot--mirror summary").click();
+  await desktop.locator(".room-scene").scrollIntoViewIfNeeded();
+  await desktop.locator(".room-scene__dot").first().click();
+  assert.match(await desktop.locator(".room-scene__card").innerText(), /₺/, "Shop the Room noktası fiyatlı ürün kartı açmalı.");
+  await desktop.keyboard.press("Escape");
+  assert.equal(await desktop.locator(".room-scene__card").count(), 0, "Esc ile ürün kartı kapanmalı.");
 
-  await desktop.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-  await desktop.waitForTimeout(300);
+  await desktop.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 600) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 100)); } });
+  await desktop.waitForTimeout(500);
   const imageAudit = await desktop.locator("img").evaluateAll((images) => images.map((image) => ({
     src: image.currentSrc || image.src,
     loaded: image.complete && image.naturalWidth > 0,

@@ -190,6 +190,47 @@ try {
     check("Eski siparişin fiyat kaydı fiyat değişiminden etkilenmiyor", oldOrder.includes("₺1.490") || oldOrder.includes("1.490"));
     await guest.close();
 
+    // Dünya geçişi, odalar, Shop the Room
+    const tour = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const t = await tour.newPage();
+    await t.goto(`${baseUrl}/worlds`, { waitUntil: "networkidle" });
+    check("Dört dünya paneli listeleniyor", (await t.locator(".world-panel").count()) === 4);
+    await t.locator(".world-panel--heritage").click();
+    await t.waitForURL(/\/worlds\/heritage/);
+    check("Dünya geçişi (renk perdesi) Heritage sayfasına götürüyor", (await t.locator("h1").textContent()).toLowerCase().includes("heritage"));
+    for (const [slug, cls] of [["modern-form", "wd--modern"], ["soft-living", "wd--soft"], ["heritage", "wd--heritage"], ["art-house", "wd--art"]]) {
+      const response = await t.goto(`${baseUrl}/worlds/${slug}`, { waitUntil: "networkidle" });
+      check(`/worlds/${slug} açılıyor ve kendi yerleşimini kullanıyor`, response?.status() === 200 && (await t.locator(`main.${cls}`).count()) === 1 && (await t.locator(".catalog-card").count()) > 0);
+    }
+    const layouts = new Set();
+    for (const slug of ["modern-form", "soft-living", "heritage", "art-house"]) {
+      await t.goto(`${baseUrl}/worlds/${slug}`, { waitUntil: "networkidle" });
+      layouts.add(await t.evaluate(() => document.querySelector("main").firstElementChild && [...document.querySelectorAll("main > section")].map((s) => s.className).join("|")));
+    }
+    check("Dört dünyanın bölüm yapısı birbirinden farklı", layouts.size === 4);
+    check("Odalar sayfası 10 oda gösteriyor", (await (async () => { await t.goto(`${baseUrl}/rooms`, { waitUntil: "networkidle" }); return t.locator(".room-tiles .category-tile").count(); })()) === 10);
+    await t.goto(`${baseUrl}/rooms/mutfak`, { waitUntil: "networkidle" });
+    check("Mutfak odası ilgili ürünleri listeliyor", (await t.locator(".catalog-card").count()) >= 5);
+    await t.goto(`${baseUrl}/rooms`, { waitUntil: "networkidle" });
+    await t.locator(".room-scene__dot").first().scrollIntoViewIfNeeded();
+    await t.locator(".room-scene__dot").nth(2).click(); // 3. nokta: tek varyantlı vazo (doğrudan sepete eklenebilir)
+    await t.locator(".room-scene__card").waitFor();
+    check("Shop the Room noktası ürün kartını açıyor (ad, fiyat, stok)", (await t.locator(".room-scene__card").innerText()).includes("₺"));
+    const hotspotLink = await t.locator(".room-scene__actions a").first().getAttribute("href");
+    check("Nokta gerçek ürün sayfasına bağlanıyor", /^\/products\/[a-z0-9-]+$/.test(hotspotLink));
+    await t.locator(".room-scene__card .add-to-cart__button").first().click();
+    await t.getByText("Sepete eklendi").first().waitFor();
+    check("Shop the Room'dan sepete ekleme çalışıyor", (await t.locator('a[href="/cart"] b').first().innerText()) === "1");
+    const responses = [];
+    for (const path of ["/", "/shop", "/wishlist", "/cart", "/checkout", "/admin/login"]) responses.push((await t.goto(`${baseUrl}${path}`, { waitUntil: "networkidle" }))?.status());
+    check("Ana menü ve alışveriş sayfaları 200 veriyor", responses.every((code) => code === 200));
+    await t.goto(`${baseUrl}/shop`, { waitUntil: "networkidle" });
+    await t.locator(".favorite-button").first().click();
+    check("Favori ekleme üst menüdeki sayacı güncelliyor", (await t.locator('a[href="/wishlist"] b').first().innerText()) === "1");
+    await t.goto(`${baseUrl}/wishlist`, { waitUntil: "networkidle" });
+    check("Favoriler sayfasında ürün listeleniyor", (await t.locator(".catalog-card").count()) === 1);
+    await tour.close();
+
     // Mobil sepet
     const mobile = await browser.newPage({ viewport: { width: 390, height: 844 } });
     await mobile.goto(`${baseUrl}/products/mono-metal-cam-sehpa?world=modern-form`, { waitUntil: "networkidle" });
