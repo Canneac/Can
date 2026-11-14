@@ -2,6 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { StorefrontHeader } from "@/components/storefront-header";
 
+export const dynamic = "force-dynamic";
+
 export default function RoomsPage() {
   return <main><StorefrontHeader /><section className="section-shell room-directory">
     <h1>Odaya göre keşfet</h1>

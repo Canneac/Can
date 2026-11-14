@@ -10,3 +10,8 @@ test("negatif ve tam sayı olmayan tutarları reddeder", () => {
   assert.throws(() => formatTryFromKurus(-1), RangeError);
   assert.throws(() => formatTryFromKurus(12.5), RangeError);
 });
+
+test("kuruşlu tutarlar kuruşu kaybetmeden yazılır", () => {
+  assert.equal(formatTryFromKurus(12345), "₺123,45");
+  assert.equal(formatTryFromKurus(4990), "₺49,90");
+});

@@ -3,6 +3,8 @@ import Link from "next/link";
 import { StorefrontHeader } from "@/components/storefront-header";
 import { designWorlds } from "@/data/catalog";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = { title: "Tasarım dünyaları | NUVESSA", description: "NUVESSA'nın dört tasarım dünyasını keşfedin." };
 
 export default function WorldsPage() {

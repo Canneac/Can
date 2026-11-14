@@ -3,7 +3,7 @@
 // Gerçek demo veritabanına (work/catalog.sqlite) dokunmaz.
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
-import { access, mkdir, rm } from "node:fs/promises";
+import { access, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import process from "node:process";
 import { chromium } from "playwright-core";
@@ -13,7 +13,8 @@ const port = process.env.E2E_PORT ?? "3101";
 const baseUrl = `http://localhost:${port}`;
 const dataDir = join(root, "work", "e2e-data");
 const nextBin = join(root, "node_modules", "next", "dist", "bin", "next");
-const env = { ...process.env, NUVESSA_DATA_DIR: dataDir, NEXT_DIST_DIR: ".next-e2e", NEXT_TELEMETRY_DISABLED: "1" };
+const adminPassword = "e2e-admin-password-123";
+const env = { ...process.env, ADMIN_PASSWORD: adminPassword, ADMIN_SESSION_SECRET: "e2e-session-secret-0123456789abcdef", NUVESSA_DATA_DIR: dataDir, NEXT_DIST_DIR: ".next-e2e", NEXT_TELEMETRY_DISABLED: "1" };
 const outputDirectory = join(root, "outputs");
 
 const candidates = [process.env.CHROME_PATH, join(process.env.PROGRAMFILES ?? "C:\\Program Files", "Google/Chrome/Application/chrome.exe")];
@@ -25,6 +26,9 @@ async function firstAvailable(paths) {
   throw new Error("Google Chrome bulunamadı. CHROME_PATH ayarlayın.");
 }
 
+// next build, next-env.d.ts dosyasını ayrı derleme klasörüne yönlendirir; işimiz bitince eski hâline getiririz.
+const nextEnvPath = join(root, "next-env.d.ts");
+const nextEnvOriginal = await readFile(nextEnvPath, "utf8");
 await rm(dataDir, { recursive: true, force: true });
 await mkdir(outputDirectory, { recursive: true });
 console.log("Üretim derlemesi (ayrı klasör) hazırlanıyor…");
@@ -123,6 +127,69 @@ try {
     const soldOut = await page.request.post(`${baseUrl}/api/orders`, { data: { ...body, lines: [{ productSlug: "fon-heykelsi-sehpa", variantId: "fon-mor", quantity: 1, sourceWorld: "art-house" }], idempotencyKey: "e2e-idempotency-key-0002" } });
     check("Tükenen ürün için sipariş verilemiyor", soldOut.status() === 400 || soldOut.status() === 409);
 
+
+    // 31–35: yönetici paneli
+    const guest = await browser.newContext();
+    const guestPage = await guest.newPage();
+    await guestPage.goto(`${baseUrl}/admin/orders`, { waitUntil: "networkidle" });
+    check("Giriş yapmadan /admin/orders giriş sayfasına yönlendiriyor", guestPage.url().endsWith("/admin/login"));
+    await guestPage.goto(`${baseUrl}/admin/products/new`, { waitUntil: "networkidle" });
+    check("Giriş yapmadan ürün ekleme sayfası açılmıyor", guestPage.url().endsWith("/admin/login"));
+    await guestPage.fill('input[name="password"]', "yanlis-parola-123");
+    await guestPage.getByRole("button", { name: "Giriş yap" }).click();
+    await guestPage.getByText("Parola hatalı").waitFor();
+    check("Yanlış parola reddediliyor", true);
+    await guestPage.fill('input[name="password"]', adminPassword);
+    await guestPage.getByRole("button", { name: "Giriş yap" }).click();
+    await guestPage.waitForURL(/\/admin$/);
+    check("Doğru parola ile yönetici girişi yapılıyor", (await guestPage.locator("h1").innerText()) === "Özet");
+
+    await guestPage.goto(`${baseUrl}/admin/orders`, { waitUntil: "networkidle" });
+    check("Verilen demo sipariş yönetici panelinde görünüyor", (await guestPage.getByText(orderNumber).count()) >= 1 && (await guestPage.locator(".admin-badge", { hasText: "DEMO" }).count()) >= 1);
+    await guestPage.locator(".admin-order").filter({ hasText: orderNumber }).locator("select").selectOption("shipped");
+    await guestPage.locator(".admin-order").filter({ hasText: orderNumber }).getByRole("button", { name: "Durumu güncelle" }).click();
+    await guestPage.waitForLoadState("networkidle");
+    await page.goto(`${baseUrl}/orders/${orderNumber}`, { waitUntil: "networkidle" });
+    check("Sipariş durumu yönetici panelinden güncellenebiliyor", (await page.locator("body").innerText()).includes("Kargoya verildi"));
+
+    await guestPage.goto(`${baseUrl}/admin/categories`, { waitUntil: "networkidle" });
+    await guestPage.fill('input[aria-label="Yeni kategori adı"]', "Deneme Kategorisi");
+    await guestPage.getByRole("button", { name: "Kategori ekle" }).click();
+    await guestPage.waitForURL(/saved=deneme-kategorisi/);
+    await page.goto(`${baseUrl}/shop`, { waitUntil: "networkidle" });
+    check("Yeni kategori mağaza menüsünde görünüyor", (await page.locator(".category-bar").innerText()).includes("Deneme Kategorisi"));
+
+    await guestPage.goto(`${baseUrl}/admin/products/new`, { waitUntil: "networkidle" });
+    await guestPage.fill('input[name="name"]', "Deneme Test Ürünü");
+    await guestPage.selectOption('select[name="categorySlug"]', "deneme-kategorisi");
+    await guestPage.fill('textarea[name="description"]', "Yönetici panelinden eklenen deneme ürünü açıklaması.");
+    await guestPage.fill('input[name="variantLabel0"]', "Standart");
+    await guestPage.fill('input[name="variantPrice0"]', "123,45");
+    await guestPage.fill('input[name="variantStock0"]', "7");
+    await guestPage.getByRole("button", { name: "Ürünü oluştur" }).click();
+    await guestPage.waitForURL(/saved=deneme-test-urunu/);
+    await page.goto(`${baseUrl}/shop?q=deneme`, { waitUntil: "networkidle" });
+    check("Yönetici ekleyen yeni ürün mağazada görünüyor", (await page.locator(".catalog-card").count()) === 1 && (await page.locator(".catalog-card").innerText()).includes("123,45"));
+    const invalid = await guestPage.goto(`${baseUrl}/admin/products/new`, { waitUntil: "networkidle" });
+    await guestPage.fill('input[name="name"]', "Eksik Ürün");
+    await guestPage.fill('textarea[name="description"]', "Varyant (fiyat/stok) girilmeyen geçersiz ürün.");
+    await guestPage.getByRole("button", { name: "Ürünü oluştur" }).click();
+    await guestPage.waitForURL(/error=/);
+    check("Eksik/geçersiz ürün formu reddediliyor", invalid?.status() === 200 && (await guestPage.locator(".admin-alert").count()) === 1);
+
+    await guestPage.goto(`${baseUrl}/admin/products?saved=x`, { waitUntil: "networkidle" });
+    const quick = guestPage.locator("form", { has: guestPage.locator('input[name="variantId"][value="saf-set"]') });
+    await quick.locator('input[name="price"]').fill("99,50");
+    await quick.locator('input[name="stock"]').fill("3");
+    await quick.getByRole("button", { name: "Kaydet" }).click();
+    await guestPage.waitForURL(/saved=saf-bitkisel/);
+    await page.goto(`${baseUrl}/products/saf-bitkisel-temizlik-seti`, { waitUntil: "networkidle" });
+    check("Yönetici fiyat değişikliği mağazaya yansıyor", (await page.locator(".buy-box__price").innerText()).includes("99,50"));
+    check("Yönetici stok değişikliği mağazaya yansıyor", (await page.locator(".buy-box__stock").innerText()).includes("Son 3"));
+    const oldOrder = await (await page.request.get(`${baseUrl}/orders/${orderNumber}`)).text();
+    check("Eski siparişin fiyat kaydı fiyat değişiminden etkilenmiyor", oldOrder.includes("₺1.490") || oldOrder.includes("1.490"));
+    await guest.close();
+
     // Mobil sepet
     const mobile = await browser.newPage({ viewport: { width: 390, height: 844 } });
     await mobile.goto(`${baseUrl}/products/mono-metal-cam-sehpa?world=modern-form`, { waitUntil: "networkidle" });
@@ -141,4 +208,5 @@ try {
   for (const [name] of results) console.log(`  ✔ ${name}`);
 } finally {
   server.kill();
+  await writeFile(nextEnvPath, nextEnvOriginal);
 }

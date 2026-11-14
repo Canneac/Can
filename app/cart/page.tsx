@@ -1,6 +1,8 @@
 import { CartView } from "@/components/cart-view";
 import { StorefrontHeader } from "@/components/storefront-header";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = { title: "Sepetim | NUVESSA" };
 
 export default function CartPage() {

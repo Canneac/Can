@@ -7,6 +7,8 @@ import { brand } from "@/config/brand";
 import { featuredObjects, homeCollections } from "@/data/homepage";
 import { formatTryFromKurus } from "@/domain/money";
 
+export const dynamic = "force-dynamic";
+
 function ArrowIcon({ diagonal = false }: { diagonal?: boolean }) {
   return diagonal ? (
     <svg viewBox="0 0 18 18" aria-hidden="true" className="arrow-icon">
