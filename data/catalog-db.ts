@@ -1,24 +1,32 @@
-import { mkdirSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import { catalogProducts, type CatalogProduct } from "@/data/catalog";
+import { CATALOG_REVISION, catalogProducts, type CatalogProduct } from "@/data/catalog";
+import { ensureSchema, isRevisionApplied, syncCatalog } from "@/domain/catalog-sync";
 
 export function readCatalog(): CatalogProduct[] {
   const directory = join(process.cwd(), "work");
+  const file = join(directory, "catalog.sqlite");
   mkdirSync(directory, { recursive: true });
-  const db = new DatabaseSync(join(directory, "catalog.sqlite"));
+
+  const db = new DatabaseSync(file);
   try {
-    db.exec("PRAGMA busy_timeout = 5000; BEGIN IMMEDIATE");
-    db.exec("CREATE TABLE IF NOT EXISTS products (slug TEXT PRIMARY KEY, details TEXT NOT NULL); CREATE TABLE IF NOT EXISTS migrations (version INTEGER PRIMARY KEY)");
-    if (!db.prepare("SELECT version FROM migrations WHERE version = 1").get()) {
-      const insert = db.prepare("INSERT OR IGNORE INTO products (slug, details) VALUES (?, ?)");
-      for (const product of catalogProducts) insert.run(product.slug, JSON.stringify(product));
-      db.exec("INSERT INTO migrations VALUES (1)");
+    db.exec("PRAGMA busy_timeout = 5000");
+    ensureSchema(db);
+    if (!isRevisionApplied(db, CATALOG_REVISION)) {
+      // Güncellemeden önce mevcut veritabanının yedeğini al; hiçbir kayıt silinmez.
+      db.exec("PRAGMA wal_checkpoint(TRUNCATE)");
+      const backups = join(directory, "backups");
+      mkdirSync(backups, { recursive: true });
+      const backup = join(backups, `catalog.before-revision-${CATALOG_REVISION}.sqlite`);
+      if (existsSync(file) && !existsSync(backup)) copyFileSync(file, backup);
+      syncCatalog(db, catalogProducts, CATALOG_REVISION);
     }
-    db.exec("COMMIT");
-    return db.prepare("SELECT details FROM products ORDER BY rowid").all().map(
-      (row) => JSON.parse(String(row.details)) as CatalogProduct,
-    );
+    return db
+      .prepare("SELECT details FROM products ORDER BY rowid")
+      .all()
+      .map((row) => JSON.parse(String(row.details)) as CatalogProduct)
+      .sort((a, b) => (a.rank ?? 9999) - (b.rank ?? 9999));
   } finally {
     db.close();
   }
