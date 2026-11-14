@@ -25,7 +25,6 @@ export default function HomePage() {
     <main id="top">
       <StorefrontHeader overlay />
       <CinematicIntro
-        poster="/images/private-gallery-hero.png"
         nextImage="/images/salon-editorial.png"
         nextAlt="Gün ışığı alan, kemerli duvarlı geniş salon"
         nextTitle="Evin her köşesi için"

@@ -129,6 +129,9 @@ Sonuçlar her aşama sonunda dürüstçe işaretlenir: Başarılı / Başarısı
 - 14 Kas 2026 — Dört dünya sayfası tek sade şablona indirildi (büyük görsel + aynı ürün ızgarası); atmosfer renk ve görselle ayrışır. Dünya renkli sepet özelliği aynen korundu.
 - 14 Kas 2026 — Yatay (landscape) telefon hatası: masaüstü menüsü ve 650 px'lik hero 390 px yüksekliğe sığmıyordu; tüm düzen `svh` ve kısa ekran kurallarıyla yeniden yazıldı, testlere yatay ekran boyutları eklendi.
 
+- 14 Kas 2026 — Ana sayfa girişi "20 ortam" olarak yeniden kuruldu (`data/environments.ts`): giriş açılır açılmaz oynar, ortamlar kendiliğinden dönüşür (çözülme / dairesel açılma / yatay silme). **Dürüst sınır:** yalnızca 1 gerçek video var; diğer 19 ortam 7 fotoğrafın farklı kadrajlarıdır. Gerçek video eklemek için `kind: "video"` kaydı yeterli; indirme izni ve telif kontrolü gerekir.
+- 14 Kas 2026 — "Hareketi azalt" cihaz ayarı artık videoyu kapatmaz (Windows'ta animasyon efektleri kapalı olan kullanıcı videoyu göremiyordu); yalnızca yakınlaşma ve kaydırma geçişi kapanır, her zaman "Duraklat" düğmesi vardır.
+
 ## Test günlüğü
 
 Son çalıştırma (14 Kas 2026): `npm test` 14/14 ✔ · `npm run lint` ✔ · `tsc` ✔ · `npm run build` ✔ · `npm run test:browser` ✔ (masaüstü + mobil, gerçek video oynatma, hotspot) · `npm run test:e2e` 50/50 ✔ (üretim derlemesi, ayrı veri klasörü).

@@ -28,6 +28,14 @@ try {
   await desktop.waitForFunction(() => document.querySelector(".cin video")?.currentTime > 0, null, { timeout: 15000 });
   ok("Ana sayfa 200; giriş videosu gerçekten oynuyor (currentTime > 0)");
   assert.ok(await desktop.locator(".cin__title h1").isVisible(), "Başlık ilk ekranda görünmeli.");
+  assert.match(await desktop.locator(".env-label__count").innerText(), /01 \/ 20/, "Giriş 20 ortamdan oluşmalı.");
+  await desktop.waitForFunction(() => /02 \/ 20/.test(document.querySelector(".env-label__count")?.textContent ?? ""), null, { timeout: 20000 });
+  ok("20 ortamlı giriş: 1. ortam (video) bitince 2. ortama kendiliğinden geçiyor");
+  const reducedPage = await (await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" })).newPage();
+  await reducedPage.goto(baseUrl, { waitUntil: "domcontentloaded" });
+  await reducedPage.waitForFunction(() => document.querySelector(".env video")?.currentTime > 0, null, { timeout: 15000 });
+  ok("Windows animasyon efektleri kapalı olsa bile video girişte oynuyor");
+  await reducedPage.close();
   const range = await desktop.evaluate(() => document.querySelector(".cin").offsetHeight - innerHeight);
   await desktop.evaluate((y) => window.scrollTo(0, y), Math.round(range * 0.7));
   await desktop.waitForTimeout(300);

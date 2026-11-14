@@ -194,3 +194,25 @@ body { color: var(--ink); font-size: 13px; letter-spacing: .01em; }
 .pcard__media:hover .pcard__add { transform: scale(1.06); }
 a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 .cin a:focus-visible, .cin button:focus-visible { outline-color: #fff; }
+
+/* ---------- 20 ortam: sürekli dönüşen giriş ---------- */
+.env-stage { position: absolute; inset: 0; }
+.env { position: absolute; inset: 0; overflow: hidden; opacity: 0; }
+.env img, .env video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform-origin: var(--fx) var(--fy); }
+.env--next { z-index: 0; } .env--prev { z-index: 1; opacity: 1; } .env--current { z-index: 2; opacity: 1; }
+.env--current img, .env--current video { animation: env-kb var(--dur) ease-out both; }
+.env--calm img, .env--calm video { animation: none !important; transform: scale(var(--z0)); }
+@keyframes env-kb { from { transform: scale(var(--z0)); } to { transform: scale(var(--z1)); } }
+.env--current.env--t0 { animation: env-fade 1.4s ease-out both; }
+.env--current.env--t1 { animation: env-iris 1.5s cubic-bezier(.65,0,.25,1) both; }
+.env--current.env--t2 { animation: env-wipe 1.3s cubic-bezier(.65,0,.25,1) both; }
+@keyframes env-fade { from { opacity: 0; filter: blur(10px) brightness(1.25); } to { opacity: 1; filter: none; } }
+@keyframes env-iris { from { clip-path: circle(0% at var(--fx) var(--fy)); } to { clip-path: circle(150% at var(--fx) var(--fy)); } }
+@keyframes env-wipe { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+.env-label { position: absolute; left: var(--pad); bottom: clamp(14px, 4svh, 30px); z-index: 5; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; max-width: calc(100% - 210px); color: #fff; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; opacity: var(--title, 1); }
+.env-label__count { opacity: .75; } .env-label__name { font-weight: 600; } .env-label__link { text-decoration: underline; text-underline-offset: 4px; }
+.env-label__bar { flex-basis: 100%; height: 2px; margin-top: 8px; background: rgba(255,255,255,.28); max-width: 260px; }
+.env-label__bar i { display: block; height: 100%; background: #fff; transform-origin: left; animation: env-bar linear both; }
+@keyframes env-bar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@media (max-width: 760px) { .env-label__link { display: none; } .cin__scroll { display: none; } .env-label { max-width: calc(100% - 150px); } }
+@media (max-height: 520px) and (orientation: landscape) { .env-label { display: none; } }
