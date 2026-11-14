@@ -37,6 +37,7 @@ try {
   assert.equal(desktopResponse?.status(), 200, "Ana sayfa 200 yanıtı vermeli.");
   assert.match(await desktop.title(), /NUVESSA/);
   await desktop.evaluate(() => document.fonts.ready);
+  await desktop.waitForFunction(() => document.querySelector("video")?.currentTime > 0);
 
   await desktop.locator(".room-hotspot--mirror summary").click();
   assert.equal(await desktop.locator(".room-hotspot--mirror").getAttribute("open") !== null, true, "Oda hotspot detayı açılmalı.");
@@ -55,6 +56,51 @@ try {
   assert.ok(imageAudit.some((image) => image.src.includes("nuvessa-wordmark-light.svg")), "Yatay NUVESSA logosu yüklenmeli.");
   await desktop.evaluate(() => window.scrollTo(0, 0));
   await desktop.screenshot({ path: join(outputDirectory, "nuvessa-desktop.png") });
+
+  const shop = await browser.newPage({ viewport: desktopViewport, deviceScaleFactor: 1 });
+  const shopResponse = await shop.goto(`${baseUrl}/shop?q=vazo`, { waitUntil: "networkidle" });
+  assert.equal(shopResponse?.status(), 200, "Katalog sayfası 200 yanıtı vermeli.");
+  assert.equal(await shop.locator(".catalog-card").count(), 1, "Vazo araması tek eşleşme göstermeli.");
+  const normalizedSearch = await shop.goto(`${baseUrl}/shop?q=kase`, { waitUntil: "networkidle" });
+  assert.equal(normalizedSearch?.status(), 200);
+  assert.equal(await shop.locator(".catalog-card").count(), 1, "ASCII kâse araması Türkçe karakterli ürünü bulmalı.");
+  const noResults = await shop.goto(`${baseUrl}/shop?q=uzay%20gemisi`, { waitUntil: "networkidle" });
+  assert.equal(noResults?.status(), 200);
+  assert.equal(await shop.locator(".catalog-empty").count(), 1, "Henüz katalogda olmayan arama açık bir boş durum göstermeli.");
+  await shop.goto(`${baseUrl}/shop?q=cop%20kovasi`, { waitUntil: "networkidle" });
+  assert.equal(await shop.locator(".catalog-card").count(), 1, "ASCII çöp kovası araması Türkçe katalog kaydını bulmalı.");
+  assert.equal(await shop.locator(".catalog-card img").evaluate((image) => image.complete && image.naturalWidth > 0), true, "Çöp kovası görseli yüklenmeli.");
+  await shop.goto(`${baseUrl}/shop?q=kasik`, { waitUntil: "networkidle" });
+  assert.equal(await shop.locator(".catalog-card").count(), 1, "ASCII kaşık araması Türkçe katalog kaydını bulmalı.");
+  assert.equal(await shop.locator(".catalog-card img").evaluate((image) => image.complete && image.naturalWidth > 0), true, "Çatal-kaşık görseli yüklenmeli.");
+  await shop.goto(`${baseUrl}/shop?category=mobilya&sort=price-asc`, { waitUntil: "networkidle" });
+  assert.equal(await shop.locator(".catalog-card").count(), 1, "Mobilya kategorisi demo kanepeyi göstermeli.");
+  assert.equal(await shop.locator(".catalog-card__details h3").innerText(), "Sera — Bouclé Kanepe");
+  const sofaImage = await shop.locator(".catalog-card img").evaluate((image) => image.complete && image.naturalWidth > 0);
+  assert.equal(sofaImage, true, "Kanepe görseli yüklenmeli.");
+  await shop.goto(`${baseUrl}/shop?sort=price-asc`, { waitUntil: "networkidle" });
+  const sortedPrices = await shop.locator(".catalog-card__details > strong").allTextContents();
+  assert.match(sortedPrices[0], /1\.490/, "Artan sıralama en düşük demo fiyatıyla başlamalı.");
+  assert.match(sortedPrices.at(-1), /38\.990/, "Artan sıralama en yüksek demo fiyatıyla bitmeli.");
+  const shopLayout = await shop.evaluate(() => ({ width: innerWidth, documentWidth: document.documentElement.scrollWidth }));
+  assert.ok(shopLayout.documentWidth <= shopLayout.width, "Katalog sayfasında yatay taşma olmamalı.");
+  await shop.goto(`${baseUrl}/shop`, { waitUntil: "networkidle" });
+  await shop.locator(".catalog-grid").scrollIntoViewIfNeeded();
+  await shop.screenshot({ path: join(outputDirectory, "nuvessa-catalog-desktop.png") });
+
+  for (const slug of ["modern-form", "soft-living", "heritage", "art-house"]) {
+    const response = await shop.goto(`${baseUrl}/worlds/${slug}`, { waitUntil: "networkidle" });
+    assert.equal(response?.status(), 200, `${slug} dünyası açılmalı.`);
+    await shop.screenshot({ path: join(outputDirectory, `renewal-${slug}.png`) });
+  }
+  for (const route of ["shop", "worlds"]) {
+    assert.equal((await shop.goto(`${baseUrl}/${route}`, { waitUntil: "networkidle" }))?.status(), 200);
+    await shop.setViewportSize({width: 1440, height: 900});
+    await shop.screenshot({path: join(outputDirectory, `renewal-${route}.png`)});
+  }
+  const productResponse = await shop.goto(`${baseUrl}/products/aren-form-vazo`, { waitUntil: "networkidle" });
+  assert.equal(productResponse?.status(), 200, "Demo ürün detay sayfası açılmalı.");
+  assert.match(await shop.locator("h1").innerText(), /Aren/);
 
   const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
   const mobileResponse = await mobile.goto(baseUrl, { waitUntil: "networkidle" });
@@ -75,10 +121,31 @@ try {
   await mobile.locator(".mobile-nav summary").click();
   assert.equal(await mobile.locator(".mobile-nav").getAttribute("open") !== null, true, "Mobil menü açılmalı.");
   assert.equal(await mobile.locator(".mobile-nav nav a").count(), 3, "Mobil menüde üç bölüm bağlantısı olmalı.");
+  await mobile.goto(`${baseUrl}/shop`, { waitUntil: "networkidle" });
+  const mobileShopWidth = await mobile.evaluate(() => ({ width: innerWidth, documentWidth: document.documentElement.scrollWidth }));
+  assert.ok(mobileShopWidth.documentWidth <= mobileShopWidth.width, "Mobil katalogda yatay taşma olmamalı.");
+  await mobile.locator(".catalog-grid").scrollIntoViewIfNeeded();
+  await mobile.screenshot({ path: join(outputDirectory, "nuvessa-catalog-mobile.png") });
 
-  console.log(`Masaüstü: ${desktopViewport.width} × ${desktopViewport.height} — 200, logo ve tüm görseller yüklü.`);
-  console.log("Mobil: 390 × 844 — yatay taşma yok, menü ve hotspot çalışıyor.");
-  console.log("Ekran görüntüleri outputs/nuvessa-desktop.png ve outputs/nuvessa-mobile.png dosyalarına kaydedildi.");
+  const narrowMobile = await browser.newPage({ viewport: { width: 360, height: 780 }, deviceScaleFactor: 1 });
+  await narrowMobile.goto(`${baseUrl}/shop`, { waitUntil: "networkidle" });
+  const narrowWidth = await narrowMobile.evaluate(() => ({ width: innerWidth, documentWidth: document.documentElement.scrollWidth }));
+  assert.ok(narrowWidth.documentWidth <= narrowWidth.width, "360px mobil katalogda yatay taşma olmamalı.");
+
+  for (const width of [375, 390, 768]) {
+    await mobile.setViewportSize({ width, height: 900 });
+    for (const route of ["", "shop"]) {
+      await mobile.goto(`${baseUrl}/${route}`, { waitUntil: "networkidle" });
+      assert.ok(await mobile.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+      await mobile.screenshot({path: join(outputDirectory, `renewal-${route || "home"}-${width}.png`)});
+    }
+  }
+  console.log(`Masaüstü: ${desktopViewport.width} × ${desktopViewport.height} — ana sayfa 200, logo ve tüm görseller yüklü.`);
+  console.log("Katalog: Türkçe/ASCII araması, boş durum, mobilya filtresi, dört dünya ve ürün detayı çalışıyor.");
+  console.log("Mobil: 390 × 844 ve katalog 360 × 780 — yatay taşma yok; menü ve hotspot çalışıyor.");
+  console.log("Masaüstü/mobil ana sayfa ve katalog ekran görüntüleri outputs/ klasörüne kaydedildi.");
 } finally {
   await browser.close();
 }
+
+

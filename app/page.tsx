@@ -1,6 +1,10 @@
+import { HeroVideo } from "@/components/hero-video";
 import Image from "next/image";
+import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
+import { StorefrontHeader } from "@/components/storefront-header";
 import { brand } from "@/config/brand";
+import { catalogProducts } from "@/data/catalog";
 import { featuredObjects, homeCollections } from "@/data/homepage";
 import { formatTryFromKurus } from "@/domain/money";
 
@@ -16,40 +20,6 @@ function ArrowIcon({ diagonal = false }: { diagonal?: boolean }) {
   );
 }
 
-function SiteHeader() {
-  return (
-    <>
-      <div className="announcement" aria-label="Site bilgisi">
-        <span>THE PRIVATE GALLERY</span>
-        <span className="announcement__divider" aria-hidden="true" />
-        <span>NESNELERLE KURULAN BİR ATMOSFER</span>
-      </div>
-      <header className="site-header">
-        <a className="site-header__logo" href="#top" aria-label="NUVESSA ana sayfa">
-          <BrandLogo variant="header" decorative priority className="wordmark" />
-        </a>
-        <nav className="desktop-nav" aria-label="Ana gezinme">
-          <a href="#koleksiyonlar">Koleksiyonlar</a>
-          <a href="#secim">Seçkiden</a>
-          <a href="#yaklasim">Yaklaşımımız</a>
-        </nav>
-        <a className="header-note" href="#mekan">
-          <span>Bir mekânı keşfet</span>
-          <ArrowIcon diagonal />
-        </a>
-        <details className="mobile-nav">
-          <summary aria-label="Gezinme menüsünü aç veya kapat"><span /><span /></summary>
-          <nav aria-label="Mobil gezinme">
-            <a href="#koleksiyonlar">Koleksiyonlar</a>
-            <a href="#secim">Seçkiden</a>
-            <a href="#yaklasim">Yaklaşımımız</a>
-          </nav>
-        </details>
-      </header>
-    </>
-  );
-}
-
 function Price({ amountInKurus }: { amountInKurus: number }) {
   return <span>{formatTryFromKurus(amountInKurus)}</span>;
 }
@@ -57,7 +27,7 @@ function Price({ amountInKurus }: { amountInKurus: number }) {
 export default function HomePage() {
   return (
     <main id="top">
-      <SiteHeader />
+      <StorefrontHeader />
 
       <section className="hero" aria-labelledby="hero-title">
         <Image
@@ -68,23 +38,23 @@ export default function HomePage() {
           sizes="100vw"
           className="hero__image"
         />
-        <div className="hero__wash" aria-hidden="true" />
+        <HeroVideo /><div className="hero__wash" aria-hidden="true" />
         <div className="hero__copy">
           <div className="eyebrow hero__eyebrow"><span className="eyebrow__rule" /> SEÇİLMİŞ NESNELER, KİŞİSEL MEKÂNLAR</div>
           <p className="hero__overline">{brand.signature}</p>
-          <h1 id="hero-title">Nesnelerle<br />bir <em>ruh hâli.</em></h1>
-          <p className="hero__description">Bazı parçalar yalnızca yer kaplamaz. Bir odaya, size ait bir his verir.</p>
-          <a className="text-link hero__link" href="#koleksiyonlar">
-            <span>NUVESSA dünyasını keşfet</span><ArrowIcon />
-          </a>
+          <h1 id="hero-title">NUVESSA</h1>
+          <p className="hero__description">Bir evden daha fazlası.</p>
+          <Link className="text-link hero__link" href="/worlds">
+            <span>Dünyaları keşfet</span><ArrowIcon />
+          </Link>
         </div>
-        <div className="hero__caption" aria-hidden="true">
+        <div className="hero__shop"><Link href="/shop">Alışverişe başla ↗</Link></div><div className="hero__caption" aria-hidden="true">
           <span>01 / 03</span><span className="hero__caption-line" /><span>THE PRIVATE GALLERY</span>
         </div>
         <div className="hero__side-note" aria-hidden="true">FORM · IŞIK · DOKU</div>
       </section>
 
-      <section className="intro section-shell" aria-labelledby="intro-title">
+      <section className="section-shell home-discovery"><h2>Evinizi keşfedin</h2><Link href="/rooms">Odaya göre ↗</Link><Link href="/shop?category=mobilya">Mobilya ↗</Link><Link href="/shop?category=mutfak">Mutfak ve sofra ↗</Link><Link href="/shop?category=temizlik">Günlük ihtiyaçlar ↗</Link></section><section className="intro section-shell" aria-labelledby="intro-title">
         <div className="intro__seal"><BrandLogo variant="monogramOnLight" decorative className="monogram" /></div>
         <p className="eyebrow">BİR SEÇKİDEN FAZLASI</p>
         <h2 id="intro-title">Mekânın hafızası,<br /><em>dokunduğunuz</em> şeylerde saklı.</h2>
@@ -125,7 +95,7 @@ export default function HomePage() {
           <span className="demo-note">Tasarım önizlemesi · Ürün adları ve fiyatlar örnektir.</span>
         </div>
         <div className="object-grid">
-          {featuredObjects.map((item) => (
+          {featuredObjects.map((item, index) => (
             <article className={`object-card object-card--${item.tone}`} key={item.number}>
               <div className="object-card__visual">
                 <Image src={item.image} alt={item.imageAlt} fill sizes="(max-width: 700px) 84vw, 30vw" className="object-card__image" />
@@ -133,7 +103,7 @@ export default function HomePage() {
                 <span className="object-card__art-label">NUVESSA<br />OBJECT STUDY</span>
               </div>
               <div className="object-card__details">
-                <div><h3>{item.name}</h3><p>{item.material}</p></div>
+                <div><h3><Link href={`/products/${catalogProducts[index].slug}`}>{item.name}</Link></h3><p>{item.material}</p></div>
                 <Price amountInKurus={item.priceInKurus} />
               </div>
             </article>
@@ -187,7 +157,7 @@ export default function HomePage() {
         <div className="site-footer__top">
           <a href="#top" className="site-footer__logo" aria-label="NUVESSA ana sayfa"><BrandLogo variant="footer" decorative className="footer-wordmark" /></a>
           <p>{brand.signature}<br /><span>Nesnelerle kurulan kişisel bir galeri.</span></p>
-          <nav aria-label="Alt gezinme"><a href="#koleksiyonlar">Koleksiyonlar</a><a href="#secim">Seçkiden</a><a href="#yaklasim">Yaklaşımımız</a></nav>
+          <nav aria-label="Alt gezinme"><Link href="/worlds">Koleksiyonlar</Link><a href="#secim">Seçkiden</a><a href="#yaklasim">Yaklaşımımız</a></nav>
           <a href="#top" className="back-to-top">Yukarı dön <ArrowIcon diagonal /></a>
         </div>
         <div className="site-footer__bottom">
@@ -199,3 +169,6 @@ export default function HomePage() {
     </main>
   );
 }
+
+
+

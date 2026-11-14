@@ -1,11 +1,13 @@
 # NUVESSA — The Private Gallery
 
-NUVESSA ana sayfasının Türkçe, responsive tasarım önizlemesi. Next.js App Router, TypeScript ve Tailwind CSS ile oluşturulmuştur. Gerçek sipariş veya ödeme almaz.
+NUVESSA'nın Türkçe, responsive tasarım ve katalog önizlemesi. Next.js App Router, TypeScript ve Tailwind CSS ile oluşturulmuştur. Gerçek sipariş veya ödeme almaz.
 
 ## Yerel önizleme
 
 1. Proje klasörünü açın.
 2. `npm run dev` başlatıldıktan sonra tarayıcıda [http://localhost:3000](http://localhost:3000) adresine gidin.
+
+Katalog önizlemesi `/shop`, tasarım dünyaları `/worlds`, örnek ürün detayları `/products/aren-form-vazo` altındadır. Arama ve fiyat/kategori filtreleri yalnızca sabit demo kayıtlarında çalışır; kayıtlar gerçek stok veya satış bilgisi değildir.
 
 Kontroller: `npm run typecheck`, `npm run lint`, `npm test` ve uygulama çalışırken `npm run test:browser`. Tarayıcı kontrolü masaüstü/mobil önizlemeleri `outputs/` klasörüne kaydeder.
 
