@@ -4,33 +4,41 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+type Connection = { saveData?: boolean; effectiveType?: string };
+
 /**
  * Sinematik giriş: tam ekran GERÇEK video (Pexels, sessiz/inline). Sayfa kaydırılırken video
  * içeri doğru yakınlaşır, başlık silinir ve sonraki sahne yuvarlak bir "pencereden" açılır.
  * Bu geçiş kaydırmaya bağlı CSS dönüşümüdür; videonun kendisi ayrıdır.
- * Azaltılmış hareket tercihinde geçiş ve video kapalıdır, poster görseli gösterilir.
+ *
+ * Erişilebilirlik / kontrol:
+ * - Cihaz "hareketi azalt" diyorsa (Windows'ta Animasyon efektleri kapalıysa tarayıcı bunu bildirir)
+ *   video kendiliğinden BAŞLAMAZ ve kaydırma geçişi kapalıdır; poster görseli gösterilir ve
+ *   "Videoyu oynat" düğmesiyle kullanıcı videoyu kendisi başlatabilir.
+ * - Veri tasarrufu/yavaş bağlantıda da video otomatik başlamaz.
+ * - Video her zaman duraklatılabilir.
  */
 export function CinematicIntro({ poster, nextImage, nextAlt, nextTitle }: { poster: string; nextImage: string; nextAlt: string; nextTitle: string }) {
   const root = useRef<HTMLElement>(null);
   const sticky = useRef<HTMLDivElement>(null);
-  const [motion, setMotion] = useState(true);
-  const [video, setVideo] = useState(false);
+  const [reduced, setReduced] = useState(false);
+  const [slow, setSlow] = useState(false);
+  const [choice, setChoice] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const wide = window.matchMedia("(min-width: 769px)");
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
     const update = () => {
-      setMotion(!reduced.matches);
-      setVideo(!reduced.matches && wide.matches);
+      setReduced(query.matches);
+      const connection = (navigator as Navigator & { connection?: Connection }).connection;
+      setSlow(Boolean(connection?.saveData) || /(^|-)(2g|3g)$/.test(connection?.effectiveType ?? ""));
     };
     update();
-    reduced.addEventListener("change", update);
-    wide.addEventListener("change", update);
-    return () => {
-      reduced.removeEventListener("change", update);
-      wide.removeEventListener("change", update);
-    };
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
   }, []);
+
+  const motion = !reduced;
+  const videoOn = choice ?? (!reduced && !slow);
 
   useEffect(() => {
     if (!motion) return;
@@ -63,7 +71,7 @@ export function CinematicIntro({ poster, nextImage, nextAlt, nextTitle }: { post
       <div ref={sticky} className="cin__sticky">
         <div className="cin__stage">
           <Image src={poster} alt="" fill priority sizes="100vw" />
-          {video && <video src="/video/living-room.mp4" poster={poster} autoPlay muted loop playsInline preload="auto" aria-hidden="true" />}
+          {videoOn && <video src="/video/living-room.mp4" poster={poster} autoPlay muted loop playsInline preload="auto" aria-hidden="true" />}
         </div>
         <div className="cin__shade" aria-hidden="true" />
         <div className="cin__title">
@@ -83,6 +91,9 @@ export function CinematicIntro({ poster, nextImage, nextAlt, nextTitle }: { post
             </div>
           </div>
         )}
+        <button type="button" className="cin__toggle" onClick={() => setChoice(!videoOn)} aria-pressed={videoOn}>
+          <span aria-hidden="true">{videoOn ? "❚❚" : "▶"}</span> {videoOn ? "Videoyu duraklat" : "Videoyu oynat"}
+        </button>
         {motion && <span className="cin__scroll" aria-hidden="true">Kaydır</span>}
       </div>
     </section>

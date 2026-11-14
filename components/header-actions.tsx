@@ -15,7 +15,7 @@ export function HeaderActions() {
       </Link>
       <Link href="/cart" aria-label={`Sepet, ${cartCount} ürün`} className="zh__btn">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1.200 12H6.200zM9 8V6.500a3 3 0 0 1 6 0V8" /></svg>
-        {cartCount > 0 && <b className="zh__badge">{cartCount}</b>}
+        {cartCount > 0 && <b key={cartCount} className="zh__badge zh__badge--bump">{cartCount}</b>}
       </Link>
     </>
   );
