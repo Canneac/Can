@@ -19,6 +19,11 @@ export function SiteEffects() {
     }
   }, []);
 
+  // Etkin departman sekmesi telefonda ekranın dışında kalmasın.
+  useEffect(() => {
+    document.querySelector<HTMLElement>(".ztabs a[aria-current]")?.scrollIntoView({ inline: "center", block: "nearest" });
+  }, []);
+
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const root = document.documentElement;

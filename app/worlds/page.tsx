@@ -17,9 +17,9 @@ export default function WorldsPage() {
       <section className="zshop">
         <div className="zshop__title"><h1>Koleksiyonlar</h1><span>Hepsi aynı sepeti kullanır</span></div>
         <div className="zcols" aria-label="NUVESSA koleksiyonları">
-          {designWorlds.map((world) => (
+          {designWorlds.map((world, position) => (
             <WorldLink key={world.slug} world={world.slug} href={`/worlds/${world.slug}`} className="zcol world-panel">
-              <Image src={WORLD_CONTENT[world.slug].image} alt="" fill sizes="(max-width: 760px) 50vw, 25vw" />
+              <Image src={WORLD_CONTENT[world.slug].image} alt="" fill sizes="(max-width: 760px) 50vw, 25vw" priority={position < 2} />
               <span>{world.name}<small>{world.quality} · {products.filter((product) => product.worlds.includes(world.slug)).length} ürün</small></span>
             </WorldLink>
           ))}

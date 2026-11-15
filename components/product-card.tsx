@@ -20,8 +20,9 @@ export function ProductCard({ product, priority, world }: Props) {
     <article className="pcard">
       <div className="pcard__media">
         <Link href={href} className="pcard__img" aria-label={`${product.name} detayları`}>
-          <ProductVisual product={product} sizes="(max-width: 760px) 50vw, (max-width: 1100px) 33vw, 25vw" priority={priority} />
+          <ProductVisual product={product} sizes="(max-width: 760px) 50vw, (max-width: 1100px) 33vw, 25vw" priority={priority} showLabel={false} />
         </Link>
+        {!product.image && <span className="pcard__demo" aria-hidden="true">{product.number} · Demo görsel</span>}
         {!product.inStock && <span className="pcard__badge">Tükendi</span>}
         <FavoriteButton slug={product.slug} name={product.name} className="pcard__fav" />
         {product.inStock && (single

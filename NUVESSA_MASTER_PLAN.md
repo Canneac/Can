@@ -135,6 +135,8 @@ Sonuçlar her aşama sonunda dürüstçe işaretlenir: Başarılı / Başarısı
 - 15 Kas 2026 — Üyelik eklendi: parolalar scrypt+tuz ile özetlenir, oturum belirteci rastgele ve veritabanında yalnızca SHA-256 özeti tutulur (httpOnly çerez, 30 gün), giriş denemeleri sınırlıdır, açık yönlendirme engellidir. Üyelik isteğe bağlıdır; misafir alışverişi sürer. Çıkışta cihazdaki favoriler temizlenir.
 - 15 Kas 2026 — Telefonda giriş videosundan çıkış kasması: kaydırmaya bağlı JS/clip-path/filtre efektleri telefon ve dokunmatik cihazlarda kapatıldı; giriş düz bir bölümdür ve ekrandan çıkınca video durur. Masaüstünde sinematik geçiş korunur.
 
+- 16 Kas 2026 — Site denetimi (`npm run audit`: 64 sayfa, axe-core WCAG A/AA, 6 ekran boyutu, konsol, kırık görsel, dokunma hedefleri). Düzeltilenler: video başlangıç/geçiş takılması (autoplay özniteliği, ilk kare poster, sonraki video hazır olmadan geçiş yok), filtre paneli taşması, karışan sekmeler ("Alt kategori" etiketi, aynı adlı alt kategoriler yeniden adlandırıldı, aktif sekme görünür alana kayar), 24 px altı dokunma hedefleri, kontrast, başlık sırası, kart bağlantı adları. Performans: kullanılmayan eski CSS'in %70'i (84→26 KB) ve kullanılmayan serif yazı tipi kaldırıldı; 28 ekran görüntüsü piksel farksız doğrulandı.
+
 ## Test günlüğü
 
 Son çalıştırma (14 Kas 2026): `npm test` 14/14 ✔ · `npm run lint` ✔ · `tsc` ✔ · `npm run build` ✔ · `npm run test:browser` ✔ (masaüstü + mobil, gerçek video oynatma, hotspot) · `npm run test:e2e` 50/50 ✔ (üretim derlemesi, ayrı veri klasörü).

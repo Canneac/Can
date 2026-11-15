@@ -155,7 +155,7 @@ body { color: var(--ink); font-size: 13px; letter-spacing: .01em; }
 .zf__top { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 28px; padding-bottom: 28px; }
 .zf__logo { display: block; width: 130px; } .zf__logo img { width: 100%; height: auto; }
 .zf__top p { margin: 12px 0 0; color: var(--mute); line-height: 1.6; max-width: 26em; }
-.zf h3 { margin: 0 0 10px; font: 600 11px var(--font-body); letter-spacing: .16em; text-transform: uppercase; }
+.zf__title { margin: 0 0 10px; font: 600 11px var(--font-body); letter-spacing: .16em; text-transform: uppercase; }
 .zf nav { display: grid; gap: 8px; align-content: start; } .zf nav a:hover { text-decoration: underline; }
 .zf__bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 24px; padding-top: 14px; border-top: 1px solid var(--line); color: var(--mute); font-size: 11px; }
 
@@ -250,3 +250,38 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .account__orders a { display: grid; gap: 2px; text-decoration: none !important; } .account__orders span { color: var(--mute); font-size: 12px; }
 .account__logout { margin-top: 20px; }
 @media (max-width: 760px) { .account__grid { grid-template-columns: 1fr; } }
+
+/* ---------- Filtre paneli ve sekmeler: taşma / karışıklık düzeltmeleri ---------- */
+.zfilter__panel { box-sizing: border-box; max-width: calc(100vw - 2 * var(--pad)); max-height: 70svh; overflow: auto; }
+.zfilter__panel * { min-width: 0; box-sizing: border-box; }
+.zfilter__panel .row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.zfilter__panel input[type="number"] { width: 100%; }
+.zfilter__panel fieldset { gap: 8px 14px; }
+.ztools select { max-width: 100%; }
+@media (max-width: 760px) {
+  .zfilter[open] { flex: 1 0 100%; order: 3; }
+  .zfilter__panel { position: static; width: 100%; max-width: none; max-height: none; margin-top: 8px; box-shadow: none; }
+}
+.ztabs { scroll-snap-type: x proximity; }
+.ztabs a { scroll-snap-align: start; }
+.zsub { align-items: center; }
+.zsub::before { content: "Alt kategori"; flex-basis: 100%; margin-bottom: -2px; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--mute); }
+.zsub a { padding: 6px 12px; font-size: 12px; }
+@media (max-width: 760px) { .ztabs { gap: 18px; margin-right: calc(-1 * var(--pad)); padding-right: var(--pad); } .zsub a { padding: 6px 11px; } }
+
+/* ---------- Denetim düzeltmeleri: dokunma hedefleri (≥ 24 px), kontrast, yazı tipi ---------- */
+:root { --font-display: "Iowan Old Style", "Palatino Linotype", Georgia, serif; }
+.pcard__name { display: inline-block; padding: 4px 0; }
+.zh__logo { padding: 8px 0; box-sizing: content-box; }
+.zsec__head a, .zp__crumbs a, .zf nav a, .zw__tabs a, .zactive a, .zempty a, .auth__alt a, .add-to-cart__link, .cart-continue { display: inline-block; padding-block: 5px; }
+.zf__logo { padding-block: 4px; }
+.buy-box__stock span { color: var(--mute); }
+.variant-option.is-out { opacity: 1; color: #5c5851; text-decoration: line-through; }
+.zp__crumbs { align-items: center; }
+
+.pcard__demo { position: absolute; left: 8px; bottom: 10px; right: 52px; z-index: 1; font-size: 9px; letter-spacing: .14em; text-transform: uppercase; opacity: .7; pointer-events: none; color: #4f4a42; }
+.variant-option { position: relative; }
+.variant-option input { inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.zfilter__panel input[type="checkbox"], .zfilter__panel input[type="radio"] { width: 20px; height: 20px; }
+.zfilter__panel fieldset label { padding-block: 4px; }
+.zfilter__panel input[type="checkbox"], .zfilter__panel input[type="radio"] { flex: 0 0 20px; min-width: 20px; }

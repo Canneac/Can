@@ -4,8 +4,11 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { Environment } from "@/data/environments";
 
-/** Tek bir ortam videosu: "etkin" olunca oynar, değilken durur (sonraki ortam yalnızca önceden yüklenir). */
-function EnvVideo({ environment, active, preload }: { environment: Environment; active: boolean; preload: "auto" | "metadata" }) {
+/**
+ * Tek bir ortam videosu. "autoPlay" yalnızca şimdiki ortamda vardır: sayfa HTML'i gelir gelmez
+ * (JavaScript'in yüklenmesini beklemeden) başlar. Sonraki ortam sessizce önceden yüklenir, oynamaz.
+ */
+function EnvVideo({ environment, active, autoPlay }: { environment: Environment; active: boolean; autoPlay: boolean }) {
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     const video = ref.current;
@@ -16,30 +19,34 @@ function EnvVideo({ environment, active, preload }: { environment: Environment; 
       video.pause();
     }
   }, [active]);
-  return <video ref={ref} src={environment.src} poster={environment.poster} muted loop playsInline preload={preload} aria-hidden="true" />;
+  return <video ref={ref} src={environment.src} poster={environment.poster} autoPlay={autoPlay} muted loop playsInline preload="auto" aria-hidden="true" />;
 }
 
 /**
  * Sürekli dönüşen ortamlar: 20 gerçek video. Her geçiş farklı bir dönüşümdür
  * (yumuşak çözülme / dairesel açılma / yatay silme). Yalnızca önceki, şimdiki ve sonraki
- * ortam DOM'dadır; sonraki ortam önceden yüklenir, yalnızca şimdiki oynar — hafif kalır.
+ * ortam DOM'dadır. Geçiş, sonraki video ilk karesini gösterecek kadar yüklenmeden BAŞLAMAZ
+ * (aksi halde boş/zıplayan kare görünür); en çok 4 sn beklenir.
  */
 export function EnvironmentStage({ environments, playing, reduced }: { environments: Environment[]; playing: boolean; reduced: boolean }) {
   const [index, setIndex] = useState(0);
   const [previous, setPrevious] = useState<number | null>(null);
-  const [tick, setTick] = useState(0);
   const count = environments.length;
   const current = environments[index];
 
   useEffect(() => {
     if (!playing) return;
-    const timer = window.setTimeout(() => {
-      if (document.hidden) { setTick((value) => value + 1); return; }
+    let timer = 0;
+    const tryAdvance = (waited: number) => {
+      if (document.hidden) { timer = window.setTimeout(() => tryAdvance(waited), 1000); return; }
+      const next = document.querySelector<HTMLVideoElement>(".env--next video");
+      if (next && next.readyState < 2 && waited < 4000) { timer = window.setTimeout(() => tryAdvance(waited + 400), 400); return; }
       setPrevious(index);
       setIndex((index + 1) % count);
-    }, current.seconds * 1000);
+    };
+    timer = window.setTimeout(() => tryAdvance(0), current.seconds * 1000);
     return () => window.clearTimeout(timer);
-  }, [index, playing, count, current.seconds, tick]);
+  }, [index, playing, count, current.seconds]);
 
   useEffect(() => {
     if (previous === null) return;
@@ -63,7 +70,7 @@ export function EnvironmentStage({ environments, playing, reduced }: { environme
               className={`env env--${role} env--t${transition}${reduced ? " env--calm" : ""}`}
               style={{ "--fx": "50%", "--fy": "50%", "--z0": 1, "--z1": 1.07, "--dur": `${environment.seconds + 2}s` } as React.CSSProperties}
             >
-              <EnvVideo environment={environment} active={playing && role !== "next"} preload={role === "next" ? "metadata" : "auto"} />
+              <EnvVideo environment={environment} active={playing && role !== "next"} autoPlay={role === "current"} />
             </div>
           );
         })}

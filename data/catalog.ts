@@ -3,7 +3,7 @@ import type { BrandRecord, CategoryRecord, ProductRecord, RoomRecord, Tone, Vari
 export type { BrandRecord, CategoryRecord, ProductRecord, RoomRecord, Product, Variant, ProductIconName } from "../domain/catalog-types.ts";
 
 /** Tohum verisi değiştiğinde artırılır; veritabanı bir sonraki okumada güvenle güncellenir. */
-export const CATALOG_REVISION = 3;
+export const CATALOG_REVISION = 5;
 
 export const designWorlds = [
   { slug: "modern-form", name: "Modern Form", quality: "Çağdaş form ve mimari çizgi", className: "modern" },
@@ -21,10 +21,10 @@ export function getWorld(slug: string) {
 // ---- Kategoriler, odalar, markalar (veritabanına tohumlanır; yönetici panelinden değişir) ----
 
 export const seedCategories: CategoryRecord[] = [
-  { slug: "mobilya", name: "Mobilya", order: 1, visible: true, icon: "sofa", image: "/images/sofa-gallery.png" },
+  { slug: "mobilya", name: "Koltuk, masa ve raf", order: 1, visible: true, icon: "sofa", image: "/images/sofa-gallery.png" },
   { slug: "beyaz-esya", name: "Beyaz eşya", order: 2, visible: true, icon: "fridge" },
   { slug: "kucuk-ev-aletleri", name: "Küçük ev aletleri", order: 3, visible: true, icon: "coffee" },
-  { slug: "mutfak", name: "Mutfak", order: 4, visible: true, icon: "pot" },
+  { slug: "mutfak", name: "Pişirme ve gereçler", order: 4, visible: true, icon: "pot" },
   { slug: "sofra-servis", name: "Sofra ve servis", order: 5, visible: true, icon: "cutlery", image: "/images/cutlery-gallery.png" },
   { slug: "ev-tekstili", name: "Ev tekstili", order: 6, visible: true, icon: "bed" },
   { slug: "banyo", name: "Banyo", order: 7, visible: true, icon: "towel" },

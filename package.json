@@ -13,7 +13,8 @@
     "test:browser": "node scripts/capture-homepage.mjs",
     "test:e2e": "node scripts/e2e-commerce.mjs",
     "setup:admin": "node scripts/setup-admin.mjs",
-    "phone": "node scripts/phone.mjs"
+    "phone": "node scripts/phone.mjs",
+    "audit": "node scripts/audit-site.mjs"
   },
   "dependencies": {
     "next": "16.4.6",
@@ -25,6 +26,7 @@
     "@types/node": "^24.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "axe-core": "^4.14.0",
     "eslint": "^9.0.0",
     "eslint-config-next": "16.4.6",
     "playwright-core": "^1.65.0",
